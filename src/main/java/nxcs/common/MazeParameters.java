@@ -10,6 +10,12 @@ public class MazeParameters {
     public int resultInterval;
     public int numOfChartBars;
     public String logFolder;
+    public String mazeFile;
+    public String rewardFile;
+
+    public String getFileTimestampFormat() {
+        return fileTimestampFormat;
+    }
 
     public String fileTimestampFormat;
 

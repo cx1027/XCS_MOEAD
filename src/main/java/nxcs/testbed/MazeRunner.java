@@ -21,34 +21,18 @@ import java.util.Iterator;
 public class MazeRunner {
 
     public static void main(String[] args) throws IOException {
-        String rewardFile = "rewards/maze4.json";
-        MazeBase maze = new maze4_weighted_sum("data/maze4.txt");
-
-        ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
-        File file = new File(classLoader.getResource(rewardFile).getFile());
-
-        JSONParser parser = new JSONParser();
-        Iterator<JSONObject> iterator = null;
-        try {
-            Object obj = parser.parse(new FileReader(file));
-
-            JSONObject jsonObject = (JSONObject) obj;
-            System.out.println(jsonObject);
-            System.out.println(jsonObject.get("name"));
-            // loop array
-            JSONArray msg = (JSONArray) jsonObject.get("rewards");
-            iterator = msg.iterator();
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
 
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 2500;
-        mp.resultInterval = 2499;
+        mp.finalStateUpperBound = 5000;
+        mp.resultInterval = 4999;
         mp.logFolder = "log/maze1/csv/";
+        mp.rewardFile= "rewards/DSTfull.json";
+        mp.mazeFile= "data/DSTfull.txt";
+
+
 
 
         np.N = 6000;
@@ -85,6 +69,26 @@ public class MazeRunner {
         //initialize reward
 //            np.obj1 = new int[]{10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
         np.obj1 = new int[]{100};
+
+
+        MazeBase maze = new dst_weighted_sum(mp.mazeFile);
+        ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
+        File file = new File(classLoader.getResource(mp.rewardFile).getFile());
+
+        JSONParser parser = new JSONParser();
+        Iterator<JSONObject> iterator = null;
+        try {
+            Object obj = parser.parse(new FileReader(file));
+
+            JSONObject jsonObject = (JSONObject) obj;
+            System.out.println(jsonObject);
+            System.out.println(jsonObject.get("name"));
+            // loop array
+            JSONArray msg = (JSONArray) jsonObject.get("rewards");
+            iterator = msg.iterator();
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
 
         maze.initialize(mp, np, parseReward(iterator) ).run();
     }

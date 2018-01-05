@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,7 +45,7 @@ public abstract class MazeBase implements Environment {
     /**
      * A list of points representing locations we can safely move the agent to
      */
-    private ArrayList<Point> openLocations;
+    protected ArrayList<Point> openLocations;
     /**
      * A list of points representing the final states in the environment
      */
@@ -194,12 +193,13 @@ public abstract class MazeBase implements Environment {
                         StepStatsLogger stepLogger_test = new StepStatsLogger(chartXInterval, 0);
 
                         logger.info(String.format("######### begin to run of: Weight:%s - first reward:%s - Trail#: %s ",
-                                        weight, this.np.obj1[obj_num], trailIndex));
+                                weight, this.np.obj1[obj_num], trailIndex));
 
 
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
 
-//                                logger.info("final State Count:" + finalStateCount);
+//                            logger.info("final State Count:" + finalStateCount);
+                            logger.debug("Current Location:" + this.getCurrentLocation());
 
                             nxcs.runIteration(finalStateCount, this.getState(), weight, stepi, this.np.obj1[obj_num], moeadObj.getWeights());
 
@@ -496,25 +496,25 @@ public abstract class MazeBase implements Environment {
     }
 
     public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, double[] weight, double obj_r1) {
-        logger.info("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
+        logger.debug("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
 
         for (Point p : this.openLocations) {
-            logger.info(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
+            logger.debug(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
 
 
             List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(p.x, p.y));
 
             double[] PA1 = nxcs.generatePredictions(C, 0);
             for (int i = 0; i < PA1.length; i++) {
-                logger.info("PA1[" + i + "]:" + PA1[i]);
+                logger.debug("PA1[" + i + "]:" + PA1[i]);
             }
             double[] PA2 = nxcs.generatePredictions(C, 1);
             for (int i = 0; i < PA2.length; i++) {
-                logger.info("PA2[" + i + "]:" + PA2[i]);
+                logger.debug("PA2[" + i + "]:" + PA2[i]);
             }
             double[] PA = nxcs.generateTotalPredictions_Norm(C, weight);
             for (int i = 0; i < PA.length; i++) {
-                logger.info("PAt[" + i + "]:" + PA[i]);
+                logger.debug("PAt[" + i + "]:" + PA[i]);
             }
 
             //Q_finalreward
@@ -553,11 +553,11 @@ public abstract class MazeBase implements Environment {
                     }
                 });
 
-                logger.info("action:" + action);
+                logger.debug("action:" + action);
                 // TODO:
                 // 1.why not print fitness of cl???????
                 // 2.print PA for each state to see if PA correct
-                logger.info(A);
+                logger.debug(A);
 
             }
 
@@ -850,11 +850,11 @@ public abstract class MazeBase implements Environment {
      * @param action
      */
     public void move(int action) {
+        stepCount++;
         Point movement = actions.get(action);
         if (isValidPosition(x + movement.x, y + movement.y)) {
             x += movement.x;
             y += movement.y;
-            stepCount++;
         }
     }
 }

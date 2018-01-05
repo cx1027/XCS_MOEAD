@@ -1,0 +1,45 @@
+{
+  "name": "DSTfull",
+  "rewards": [
+    {
+      "location": "1|2",
+      "reward": "-1|5"
+    },
+    {
+      "location": "2|3",
+      "reward": "-1|25"
+    },
+    {
+      "location": "3|4",
+      "reward": "-1|60"
+    },
+    {
+      "location": "4|5",
+      "reward": "-1|65"
+    },
+    {
+      "location": "5|5",
+      "reward": "-1|70"
+    },
+    {
+      "location": "6|5",
+      "reward": "-1|75"
+    },
+    {
+      "location": "7|7",
+      "reward": "-1|80"
+    },
+    {
+      "location": "8|8",
+      "reward": "-1|90"
+    },
+    {
+      "location": "9|10",
+      "reward": "-1|92"
+    },
+    {
+      "location": "10|11",
+      "reward": "-1|100"
+    }
+  ]
+}
