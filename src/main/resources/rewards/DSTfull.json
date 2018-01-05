@@ -7,39 +7,39 @@
     },
     {
       "location": "2|3",
-      "reward": "-1|25"
+      "reward": "-1|15"
     },
     {
       "location": "3|4",
-      "reward": "-1|60"
+      "reward": "-1|40"
     },
     {
       "location": "4|5",
-      "reward": "-1|65"
-    },
-    {
-      "location": "5|5",
-      "reward": "-1|70"
-    },
-    {
-      "location": "6|5",
       "reward": "-1|75"
     },
     {
+      "location": "5|5",
+      "reward": "-1|120"
+    },
+    {
+      "location": "6|5",
+      "reward": "-1|190"
+    },
+    {
       "location": "7|7",
-      "reward": "-1|80"
+      "reward": "-1|300"
     },
     {
       "location": "8|8",
-      "reward": "-1|90"
+      "reward": "-1|450"
     },
     {
       "location": "9|10",
-      "reward": "-1|92"
+      "reward": "-1|650"
     },
     {
       "location": "10|11",
-      "reward": "-1|100"
+      "reward": "-1|900"
     }
   ]
 }
