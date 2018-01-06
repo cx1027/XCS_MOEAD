@@ -3,6 +3,7 @@ package nxcs.common;
 import com.google.gson.Gson;
 import nxcs.*;
 import nxcs.moead.MOEAD;
+import nxcs.moead.Sorting;
 import nxcs.stats.Snapshot;
 import nxcs.stats.StepSnapshot;
 import nxcs.stats.StepStatsLogger;
@@ -821,6 +822,7 @@ public abstract class MazeBase implements Environment {
             }
 
         }
+        boolean hasDuplicateOpenLocation = checkDuplicateOpenLocation();
 
 //        logger.debug("rewardGrid:" + rewardGrid);
 //        logger.info("rewards:" + this.positionRewards);
@@ -856,5 +858,51 @@ public abstract class MazeBase implements Environment {
             x += movement.x;
             y += movement.y;
         }
+    }
+
+    public boolean checkDuplicateOpenLocation() {
+        boolean dup = true;
+        Hashtable<String, Point> locs = new Hashtable<String, Point>();
+        ArrayList<Point> duplocs = new ArrayList<Point>();
+        HashSet<String> codes = new HashSet<>();
+        for (Point p : this.openLocations) {
+            try {
+                int x, y;
+                x = p.y;
+                y = p.x;
+                String code = "";
+//            code +=  String.valueOf((mazeTiles[x][y]));
+                code += String.valueOf((mazeTiles[x - 1][y - 1]));
+                code += String.valueOf((mazeTiles[x][y - 1]));
+                code += String.valueOf((mazeTiles[x + 1][y - 1]));
+                code += String.valueOf((mazeTiles[x - 1][y]));
+                code += String.valueOf((mazeTiles[x][y]));
+                code += String.valueOf((mazeTiles[x + 1][y]));
+                code += String.valueOf((mazeTiles[x - 1][y + 1]));
+                code += String.valueOf((mazeTiles[x][y + 1]));
+                code += String.valueOf((mazeTiles[x + 1][y + 1]));
+
+                logger.debug("Code:" + code);
+                if (codes.contains(code)) {
+                    if(!duplocs.contains(p))
+                        duplocs.add(locs.get(code));
+                    duplocs.add(p);
+
+                }
+                else{
+                    locs.put(code, p);
+
+                    codes.add(code);}
+
+                dup = false;
+            } catch (Exception e) {
+                logger.debug(p.toString());
+            }
+        }
+
+        //Collections.sort(codes);
+        logger.debug(codes);
+
+        return dup;
     }
 }

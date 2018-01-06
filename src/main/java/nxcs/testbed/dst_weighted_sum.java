@@ -62,7 +62,7 @@ public class dst_weighted_sum extends MazeBase {
             if (this.isEndOfProblem(this.getState()))
                 reward = this.positionRewards.get(new Point(this.x, this.y));
         } catch (Exception e) {
-            logger.info(String.format("%s  %d", state, action));
+            logger.info(String.format("#####Fatal error: %s  %d", state, action));
             throw e;
         }
 

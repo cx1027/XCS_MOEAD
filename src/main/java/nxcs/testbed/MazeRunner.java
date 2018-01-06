@@ -30,7 +30,7 @@ public class MazeRunner {
         mp.resultInterval = 4999;
         mp.logFolder = "log/maze1/csv/";
         mp.rewardFile= "rewards/DSTfull.json";
-        mp.mazeFile= "data/DSTfull.txt";
+        mp.mazeFile= "data/DSTpart.txt";
 
 
 

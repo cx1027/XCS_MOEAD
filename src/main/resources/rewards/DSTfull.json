@@ -3,15 +3,15 @@
   "rewards": [
     {
       "location": "1|2",
-      "reward": "-1|5"
+      "reward": "-1|20"
     },
     {
       "location": "2|3",
-      "reward": "-1|15"
+      "reward": "-1|30"
     },
     {
       "location": "3|4",
-      "reward": "-1|40"
+      "reward": "-1|45"
     },
     {
       "location": "4|5",
@@ -19,11 +19,11 @@
     },
     {
       "location": "5|5",
-      "reward": "-1|120"
+      "reward": "-1|90"
     },
     {
       "location": "6|5",
-      "reward": "-1|190"
+      "reward": "-1|150"
     },
     {
       "location": "7|7",
@@ -31,15 +31,15 @@
     },
     {
       "location": "8|8",
-      "reward": "-1|450"
+      "reward": "-1|700"
     },
     {
       "location": "9|10",
-      "reward": "-1|650"
+      "reward": "-1|1200"
     },
     {
       "location": "10|11",
-      "reward": "-1|900"
+      "reward": "-1|1500"
     }
   ]
 }
