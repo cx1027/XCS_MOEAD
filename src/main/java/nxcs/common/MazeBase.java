@@ -181,7 +181,6 @@ public abstract class MazeBase implements Environment {
 
                         nxcs.generateCoveringClassifierbyWeight(this.openLocations, moeadObj.weights, this.np);
 
-                        int stepi = 1;
                         this.resetPosition();
 
                         this.finalStateCount = 1;
@@ -201,10 +200,7 @@ public abstract class MazeBase implements Environment {
 //                            logger.info("final State Count:" + finalStateCount);
                             logger.debug("Current Location:" + this.getCurrentLocation());
 
-                            nxcs.runIteration(finalStateCount, this.getState(), weight, stepi, this.np.obj1[obj_num], moeadObj.getWeights());
-
-
-                            stepi++;
+                            nxcs.runIteration(finalStateCount, this.getState(), weight,  this.np.obj1[obj_num], moeadObj.getWeights());
 
 
                             if (finalStateCount > 2497) {
@@ -231,7 +227,7 @@ public abstract class MazeBase implements Environment {
 
                                 int[] actionSelect = null;
 
-                                for (double[] test_weight : moeadObj.weights) {
+                                for (double[] test_weight : moeadObj.weights) {//{0.04,0.96}, ~~0.5, {0.96,0.04}  ,
 
                                     Integer testStepCount = 0;
                                     int totalTestStepCount = 0;
@@ -273,6 +269,8 @@ public abstract class MazeBase implements Environment {
                                                 this.resetToSamePosition(testPoint);
                                                 logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testStepCount, testStepCount, testPoint));
                                                 logFlag = 0;
+
+                                                //TODO: log result: steps,hypervol,
                                             }
                                         }
                                         totalTestStepCount++;
@@ -648,7 +646,7 @@ public abstract class MazeBase implements Environment {
 
             //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
 
-            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
+            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, this.stepCount, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
 
             PAresult.add(result_row);
             //Q_weighted sum value for different weights
@@ -695,7 +693,7 @@ public abstract class MazeBase implements Environment {
 
             //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
 
-            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_max);
+            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_max, this.stepCount);
 
             PAresult.add(result_row);
             //Q_weighted sum value for different weights
@@ -707,46 +705,10 @@ public abstract class MazeBase implements Environment {
     }
 
 
-    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths() {
-        ArrayList<ArrayList<StepSnapshot>> expect = new ArrayList<ArrayList<StepSnapshot>>();
-        ArrayList<StepSnapshot> e21 = new ArrayList<StepSnapshot>();
-        e21.add(new StepSnapshot(new Point(2, 1), new Point(1, 1), 1));
-        e21.add(new StepSnapshot(new Point(2, 1), new Point(6, 1), 4));
-        expect.add(e21);
-        ArrayList<StepSnapshot> e31 = new ArrayList<StepSnapshot>();
-        e31.add(new StepSnapshot(new Point(3, 1), new Point(1, 1), 2));
-        e31.add(new StepSnapshot(new Point(3, 1), new Point(6, 1), 3));
-        expect.add(e31);
-        ArrayList<StepSnapshot> e41 = new ArrayList<StepSnapshot>();
-        e41.add(new StepSnapshot(new Point(4, 1), new Point(6, 1), 2));
-        expect.add(e41);
-        ArrayList<StepSnapshot> e51 = new ArrayList<StepSnapshot>();
-        e51.add(new StepSnapshot(new Point(5, 1), new Point(6, 1), 1));
-        expect.add(e51);
-
-        return expect;
-    }
-
-
-    private HashMap<Integer, Point> getTestLocation() {
-        HashMap<Integer, Point> ret = new HashMap<Integer, Point>();
-        ret.put(0, new Point(2, 1));
-        ret.put(1, new Point(3, 1));
-        ret.put(2, new Point(4, 1));
-        ret.put(3, new Point(5, 1));
-        return ret;
-    }
-
-    private Point getTestLocation(Integer test, HashMap<Integer, Point> locations) {
-        if (locations.containsKey(test))
-            return locations.get(test);
-        else
-            return null;
-    }
-
+    public abstract ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths();
 
     public MazeBase initialize(MazeParameters mp, NXCSParameters np, Hashtable<Point, ActionPareto> positionRewards) throws IOException {
-        logger.info("\n\n=================================================================");
+        logger.info("\n\n========================    " + this.getClass().getName()  + "   ================================");
 
         this.mp = mp;
         this.np = np;

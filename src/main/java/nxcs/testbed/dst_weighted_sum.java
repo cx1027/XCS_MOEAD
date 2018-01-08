@@ -68,4 +68,8 @@ public class dst_weighted_sum extends MazeBase {
 
         return reward;
     }
+
+    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths(){
+        return null;
+    }
 }

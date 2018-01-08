@@ -29,8 +29,8 @@ public class MazeRunner {
         mp.finalStateUpperBound = 5000;
         mp.resultInterval = 4999;
         mp.logFolder = "log/maze1/csv/";
-        mp.rewardFile= "rewards/DSTfull.json";
-        mp.mazeFile= "data/DSTpart.txt";
+        mp.rewardFile= "rewards/maze6.json";
+        mp.mazeFile= "data/maze6.txt";
 
 
 
@@ -71,7 +71,7 @@ public class MazeRunner {
         np.obj1 = new int[]{100};
 
 
-        MazeBase maze = new dst_weighted_sum(mp.mazeFile);
+        MazeBase maze = new maze6_weighted_sum(mp.mazeFile);
         ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
         File file = new File(classLoader.getResource(mp.rewardFile).getFile());
 

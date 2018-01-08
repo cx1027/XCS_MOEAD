@@ -152,7 +152,7 @@ public class NXCS {
     /**
      * Runs a single iteration of the learning process of this NXCS instance
      */
-    public void runIteration(int finalStateCount, String previousState, double[] weight, int i, double firstreward, List<double[]> MOEAD_Weights) {
+    public void runIteration(int finalStateCount, String previousState, double[] weight, double firstreward, List<double[]> MOEAD_Weights) {
         // action
         int action = INVALID_ACTION;
 
@@ -167,88 +167,6 @@ public class NXCS {
             action = XienceMath.randomInt(params.numActions);
         }
 
-//        System.out.println("****action:" + action);
-
-//		if (i < 40) {
-//			action = 2;
-//			System.out.println("action: " + action);
-//		} else {
-//			action = 1;
-//			System.out.println("action: " + action);
-//		}
-
-        // System.out.println("****action:" + action);
-        // if (i == 2) {
-        // action = 1;
-        //
-        // }
-        // if (i == 3) {
-        // action = 1;
-        //
-        // }
-        // if (i == 4) {
-        // action = 1;
-        //
-        // }
-        // if (i == 5) {
-        // action = 1;
-        //
-        // }
-        // if (i == 6) {
-        // action = 1;
-        //
-        // }
-        // if (i == 7) {
-        // action = 0;
-        //
-        // }
-        // if (i == 8) {
-        // action = 0;
-        //
-        // }
-        // if (i == 9) {
-        // action = 0;
-        //
-        // }
-        // if (i == 10) {
-        // action = 0;
-        //
-        // }
-        // if (i == 11) {
-        // action = 0;
-        //
-        // }
-        // if (i == 12) {
-        // action = 0;
-        //
-        // }
-        // if (i == 13) {
-        // action = 0;
-        //
-        // }
-        // if (i == 14) {
-        // action = 0;
-        //
-        // }
-        // if (i == 15) {
-        // action = 0;
-        //
-        // }
-        // if (i == 16) {
-        // action = 0;
-        // }
-        // if (i == 17) {
-        // action = 0;
-        // }
-        // if (i == 18) {
-        // action = 0;
-        // }
-        // if (i == 19) {
-        // action = 0;
-        // }
-        // if (i == 20) {
-        // action = 0;
-        // }
 
 		/* get immediate reward */
         reward = env.getReward(previousState, action, firstreward);
@@ -275,7 +193,7 @@ public class NXCS {
         previousAction = action;
         /* update s-1=s */
         previousState = curState;
-		/* update timestamp */
+        /* update timestamp */
         timestamp = timestamp + 1;
 
     }
@@ -291,7 +209,7 @@ public class NXCS {
      * @return The set of classifiers that match the given state
      * @see NXCSParameters#thetaMNA
      */
-    public List<Classifier>  generateMatchSet(String state) {
+    public List<Classifier> generateMatchSet(String state) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
         List<Classifier> setM = new ArrayList<Classifier>();
         while (setM.size() == 0) {
@@ -772,7 +690,7 @@ public class NXCS {
         moead_actionSet = actionSet.stream().filter(b -> Arrays.equals(b.weight_moead, moeadWeight)).collect(Collectors.toList());
 
         if (moead_actionSet.size() == 0)
-            System.out.println(String.format("no classifier with this weight:%f, %f",  moeadWeight[0], moeadWeight[1]));
+            System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
         //calculate classifier distance by weight dimension
         Classifier[] actionArray = actionSet.toArray(new Classifier[actionSet.size()]);
         double[] distance = new double[actionArray.length];

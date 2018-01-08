@@ -78,7 +78,7 @@ public class StepSnapshot {
         this.setPath(path);
     }
 
-    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min) {
+    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps) {
         this.exp_repeat = exp_repeat;
         this.finalCount = finalCount;
         this.timestamp = finalCount;
@@ -93,30 +93,18 @@ public class StepSnapshot {
         this.Q_steps_right = Q_steps_right;
         this.Q_steps_delta = Q_steps_delta;
         this.Q_steps_min = Q_steps_min;
-        this.setPath(path);
+        this.steps = steps;
+        //this.setPath(path);
     }
 
-    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, double Q_total_left, double Q_total_right, double Q_finalreward_select, double Q_steps_select, double Q_total_select) {
-        this.exp_repeat = exp_repeat;
-        this.finalCount = finalCount;
-        this.timestamp = finalCount;
-        this.openState = openState;
-        this.weight = weight;
-        this.first_reward = first_reward;
-        this.Q_finalreward_left = Q_finalreward_left;
-        this.Q_finalreward_right = Q_finalreward_right;
-        this.Q_finalreward_delta = Q_finalreward_delta;
-        this.Q_finalreward_max = Q_finalreward_max;
-        this.Q_steps_left = Q_steps_left;
-        this.Q_steps_right = Q_steps_right;
-        this.Q_steps_delta = Q_steps_delta;
-        this.Q_steps_min = Q_steps_min;
+    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps, double Q_total_left, double Q_total_right, double Q_finalreward_select, double Q_steps_select, double Q_total_select) {
+        this(exp_repeat, finalCount, weight, first_reward, openState, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, steps);
         this.Q_total_left = Q_total_left;
         this.Q_total_right = Q_total_right;
         this.Q_finalreward_select = Q_finalreward_select;
         this.Q_steps_select = Q_steps_select;
         this.Q_total_select = Q_total_select;
-        this.setPath(path);
+        //this.setPath(path);
     }
 
     public StepSnapshot(Point openState, Point finalState, int steps, ArrayList<Point> path) {
