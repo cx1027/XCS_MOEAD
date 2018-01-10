@@ -5,16 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StepSnapshot {
+    /***
+     * sequence number of experiment trail times
+     */
+    private int trailNumber;
+    /***
+     * timestamp for logging
+     */
     private int timestamp;
     private Point openState;
     private Point finalState;
 
-    private int exp_repeat;
-    private int finalCount;
-    private int experiment_num;
     private double first_reward;
+    private double[] targtWeight;
+    private int objective;
     private double[] weight;
     private int steps;
+    private double hyperVolumn;
+
     private double Q_finalreward_left;
     private double Q_finalreward_right;
     private double Q_finalreward_delta;
@@ -78,10 +86,9 @@ public class StepSnapshot {
         this.setPath(path);
     }
 
-    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps) {
-        this.exp_repeat = exp_repeat;
-        this.finalCount = finalCount;
-        this.timestamp = finalCount;
+    public StepSnapshot(int trailNumber, int timestamp, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps) {
+        this.trailNumber = trailNumber;
+        this.timestamp = timestamp;
         this.openState = openState;
         this.weight = weight;
         this.first_reward = first_reward;
@@ -97,14 +104,39 @@ public class StepSnapshot {
         //this.setPath(path);
     }
 
-    public StepSnapshot(int exp_repeat, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps, double Q_total_left, double Q_total_right, double Q_finalreward_select, double Q_steps_select, double Q_total_select) {
-        this(exp_repeat, finalCount, weight, first_reward, openState, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, steps);
+    public StepSnapshot(int trailNumber, int finalCount, double[] weight, double first_reward, Point openState, double Q_finalreward_left, double Q_finalreward_right, double Q_finalreward_delta, double Q_finalreward_max, double Q_steps_left, double Q_steps_right, double Q_steps_delta, double Q_steps_min, int steps, double Q_total_left, double Q_total_right, double Q_finalreward_select, double Q_steps_select, double Q_total_select) {
+        this(trailNumber, finalCount, weight, first_reward, openState, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, steps);
         this.Q_total_left = Q_total_left;
         this.Q_total_right = Q_total_right;
         this.Q_finalreward_select = Q_finalreward_select;
         this.Q_steps_select = Q_steps_select;
         this.Q_total_select = Q_total_select;
         //this.setPath(path);
+    }
+
+    /***
+     * constructor for steps, hypervolumn calculation
+     * @param trailNumber
+     * @param timestamp
+     * @param openState
+     * @param finalState
+     * @param targetWeight
+     * @param objective
+     * @param weight
+     * @param steps
+     * @param hyperVolumn
+     */
+    public StepSnapshot(int trailNumber, int timestamp, Point openState, Point finalState, double[] targetWeight
+            , int objective, double[] weight, int steps, double hyperVolumn) {
+        this.trailNumber = trailNumber;
+        this.timestamp = timestamp;
+        this.openState = openState;
+        this.finalState = finalState;
+        this.targtWeight = targetWeight;
+        this.objective = objective;
+        this.weight = weight;
+        this.steps = steps;
+        this.hyperVolumn = hyperVolumn;
     }
 
     public StepSnapshot(Point openState, Point finalState, int steps, ArrayList<Point> path) {
@@ -122,7 +154,7 @@ public class StepSnapshot {
     @Override
     public String toString() {
         StringBuilder build = new StringBuilder();
-        build.append(String.format("%d", this.experiment_num));
+        build.append(String.format("%d", this.trailNumber));
         build.append(", ");
         build.append(String.format("%d", this.timestamp));
         build.append(",");
@@ -184,10 +216,10 @@ public class StepSnapshot {
 
     //TODO:update toCSV
     public String toCSV_PA() {
-        //experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min);
+        //trailNumber, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min);
 
         StringBuilder build = new StringBuilder();
-        build.append(String.format("%d", this.experiment_num));
+        build.append(String.format("%d", this.trailNumber));
         build.append(", ");
         build.append(String.format("%d", this.timestamp));
         build.append(", ");
@@ -227,18 +259,22 @@ public class StepSnapshot {
 
 
     public String to_Total_CSV_PA() {
-        //experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min);
+        //trailNumber, timestamp, TargetWeight,TraceWeight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min);
 
         StringBuilder build = new StringBuilder();
-        build.append(String.format("%d", this.experiment_num));
+        build.append(String.format("%d", this.trailNumber));
         build.append(", ");
         build.append(String.format("%d", this.timestamp));
         build.append(", ");
-        build.append(String.format("(%d-%d)", (int) this.weight[0], (int) this.weight[1]));
+        build.append(String.format("%f|%f", this.targtWeight[0],   this.targtWeight[1]));
+        build.append(", ");
+        build.append(String.format("%f|%f", this.weight[0],   this.weight[1]));
         build.append(", ");
         build.append(String.format("%f", this.first_reward));
         build.append(", ");
         build.append(String.format("(%d-%d)", (int) this.openState.getX(), (int) this.openState.getY()));
+        build.append(", ");
+        build.append(String.format("(%d-%d)", (int) this.finalState.getX(), (int) this.finalState.getY()));
         build.append(", ");
 
         build.append(String.format("%f", this.Q_finalreward_left));
@@ -266,6 +302,10 @@ public class StepSnapshot {
         build.append(String.format("%f", this.Q_steps_select));
         build.append(", ");
         build.append(String.format("%f", this.Q_total_select));
+        build.append(", ");
+        build.append(String.format("%d", this.steps));
+        build.append(", ");
+        build.append(String.format("%f", this.hyperVolumn));
 //		build.append(", ");
 //
 //		if (this.path.size() > 0)

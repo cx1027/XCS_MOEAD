@@ -34,20 +34,12 @@ public class maze4_weighted_sum extends MazeBase {
         try {
             this.move(action);
 
-            if (x == 1 && y == 6) {
-                reward.setPareto(new Qvector(-1, 30));
-                // resetPosition();
-            }
-
-            if (x == 6 && y == 1) {
-                reward.setPareto(new Qvector(-1, 100));
-                // resetPosition();
-            }
-
             if (stepCount > 100) {
-//                logger.info("stepCount>100:");
+                Point p = this.getCurrentLocation();
+
 //                printOpenLocationClassifiers(0, this, null, null, first_reward);
                 resetPosition();
+                logger.info(String.format("RESET Position stepCount>100, %s, reset to random position:%s", p, this.getCurrentLocation()));
 //				action = -1;
 //                logger.info("reset:" + "x:" + x + " y:" + y);
                 reward.setPareto(new Qvector(-1, 0));//

@@ -54,7 +54,7 @@ public class StepStatsLogger {
             dataWriter = new FileWriter(csv);
             csv.getParentFile().mkdirs();
             // Write Column Headers
-            dataWriter.write("experiment_num, timestamp, weight, obj_r1, p, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min,Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_total_left, Q_total_right,Q_steps_select,Q_finalreward_select,Q_total_select" + "\n");
+            dataWriter.write("trailIndex,timestamp,weight,obj_r1,openState,finalState,Q_steps_left,Q_steps_right,Q_steps_delta,Q_steps_min,Q_finalreward_left,Q_finalreward_right,Q_finalreward_delta,Q_finalreward_max,Q_total_left,Q_total_right,Q_steps_select,Q_finalreward_select,Q_total_select,Steps,HyperVolumn," + "\n");
         } else {
             dataWriter = new FileWriter(csv, true);
         }

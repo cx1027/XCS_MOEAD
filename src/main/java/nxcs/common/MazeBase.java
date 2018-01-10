@@ -91,65 +91,7 @@ public abstract class MazeBase implements Environment {
 
         try {
 
-
-//            NXCSParameters this.np = new NXCSParameters();
-//            // Another set of parameters Woods1, Woods101
-//
-//            this.np.N = 6000;
-//            this.np.stateLength = 24;
-//            this.np.numActions = 4;
-//            this.np.rho0 = 1000;
-//            this.np.pHash = 0.0;
-//            this.np.gamma = 0.85;
-//            this.np.crossoverRate = 0.8;
-//            this.np.mutationRate = 0.04;
-//            this.np.thetaMNA = 4;
-//            this.np.thetaGA = 500;
-//            // this.np.thetaGA = 0;
-//            // this.np.e0 = 0.05;
-//            this.np.e0 = 0.05;
-//            this.np.thetaDel = 200;
-//            this.np.doActionSetSubsumption = false;
-//            this.np.doGASubsumption = false;
-//
-//            //initialize weights
-//            this.np.weights = new ArrayList<Point>();
-////            this.np.weights.add(new Point(0, 10));
-////            this.np.weights.add(new Point(1, 9));
-////            this.np.weights.add(new Point(2, 8));
-////            this.np.weights.add(new Point(3, 7));
-////            this.np.weights.add(new Point(4, 6));
-//            this.np.weights.add(new Point(5, 5));
-////            this.np.weights.add(new Point(6, 4));
-////            this.np.weights.add(new Point(7, 3));
-////            this.np.weights.add(new Point(8, 2));
-////            this.np.weights.add(new Point(9, 1));
-////            this.np.weights.add(new Point(10, 0));
-//
-//            //initialize reward
-////            this.np.obj1 = new int[]{10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-//            this.np.obj1 = new int[]{100};
-
-
-            //TODO:initialise and associate with lamda
-
-//
-//            //initalize for result output
-//            ArrayList<Point> reward_CSV = new ArrayList<Point>();
-//            for (int i = 0; i < this.np.obj1.length; i++) {
-//                reward_CSV.add(new Point(this.np.obj1[i], 1000 - this.np.obj1[i]));
-//            }
-
-//             maze = new ("data/maze5.txt");
-
-
-//            int finalStateCount = 1;
             boolean logged = false;
-//            int resultInterval = 2499;
-//            int numOfChartBars = 20;
-            // ArrayList<Point> traceWeights = new ArrayList<Point>();
-            // traceWeights.add(new Point(10, 90));
-            // traceWeights.add(new Point(95, 5));
 
             // picture: finalStateUpperBound / 20) / 10 * 10 should be 20
             int chartXInterval = ((this.mp.finalStateUpperBound / this.mp.numOfChartBars) > 10)
@@ -157,7 +99,7 @@ public abstract class MazeBase implements Environment {
 
             //Loop weights
             for (Point pweight : this.np.weights) {
-                double[] weight = new double[]{pweight.getX(), pweight.getY()};
+                double[] targetWeight = new double[]{pweight.getX(), pweight.getY()};
 
                 //Loop:diff final reward for obj1
                 for (int obj_num = 0; obj_num < this.np.obj1.length; obj_num++) {
@@ -181,6 +123,7 @@ public abstract class MazeBase implements Environment {
 
                         nxcs.generateCoveringClassifierbyWeight(this.openLocations, moeadObj.weights, this.np);
 
+                        int stepi = 1;
                         this.resetPosition();
 
                         this.finalStateCount = 1;
@@ -192,21 +135,23 @@ public abstract class MazeBase implements Environment {
                         StepStatsLogger stepLogger_test = new StepStatsLogger(chartXInterval, 0);
 
                         logger.info(String.format("######### begin to run of: Weight:%s - first reward:%s - Trail#: %s ",
-                                weight, this.np.obj1[obj_num], trailIndex));
+                                targetWeight, this.np.obj1[obj_num], trailIndex));
 
 
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
 
 //                            logger.info("final State Count:" + finalStateCount);
-                            logger.debug("Current Location:" + this.getCurrentLocation());
+                            logger.info(String.format("finalStateCount:%d, Current Location:%s", finalStateCount, this.getCurrentLocation()));
 
-                            nxcs.runIteration(finalStateCount, this.getState(), weight,  this.np.obj1[obj_num], moeadObj.getWeights());
+                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, stepi, this.np.obj1[obj_num], moeadObj.getWeights());
+
+                            stepi++;
 
 
-                            if (finalStateCount > 2497) {
-                                //logger.info("print classifiers at finalstatecount: " + finalStateCount);
-                                this.printOpenLocationClassifiers(finalStateCount, nxcs, weight, this.np.obj1[obj_num]);
-                            }
+//                            if (finalStateCount > 2497) {
+//                                //logger.info("print classifiers at finalstatecount: " + finalStateCount);
+//                                this.printOpenLocationClassifiers(finalStateCount, nxcs, weight, this.np.obj1[obj_num]);
+//                            }
 
                             if (this.isEndOfProblem(this.getState())) {
 //                                    this.resetPosition();
@@ -225,92 +170,9 @@ public abstract class MazeBase implements Environment {
                                 // test algorithem
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
 
-                                int[] actionSelect = null;
 
-                                for (double[] test_weight : moeadObj.weights) {//{0.04,0.96}, ~~0.5, {0.96,0.04}  ,
+                                trace(moeadObj, nxcs, stepLogger_test, first_Freward, trailIndex, targetWeight);
 
-                                    Integer testStepCount = 0;
-                                    int totalTestStepCount = 0;
-
-                                    logger.info(String.format("Test on  weight: %f, %f ", test_weight[0], test_weight[1]));
-
-
-                                    //testing process for 4 open states from (2,1)
-                                    actionSelect = new int[this.openLocations.size()];
-                                    int logFlag = 0;
-                                    int resetPoint = 0;
-
-                                    this.resetToSamePosition(this.openLocations.get(testStepCount));
-                                    while (testStepCount < this.openLocations.size()) {
-                                        String state = this.getState();
-                                        logger.info(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, logFlag, this.getxy()));
-                                        int action = nxcs.classify(state, test_weight);
-
-                                        if (logFlag == 0) {
-                                            actionSelect[resetPoint] = action;
-                                        }
-                                        // logger.info("choose action");
-                                        logFlag++;
-                                        //TODO:return the PA1[action]
-//                                        logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getxy()));
-
-                                        double selectedPA_reward = nxcs.getSelectPA(action, state);
-
-                                        ActionPareto r = this.getReward(state, action, first_Freward);
-
-                                        // logger.info("take testing:");
-                                        if (this.isEndOfProblem(this.getState())) {
-                                            logger.info(String.format("@3 Test:%d, Steps:%d, state:%s", resetPoint, logFlag, this.getxy()));
-                                            testStepCount++;
-                                            if (testStepCount < this.openLocations.size()) {
-                                                Point testPoint = this.openLocations.get(testStepCount); //this.getTestLocation(test, testLocations);
-                                                resetPoint++;
-
-                                                this.resetToSamePosition(testPoint);
-                                                logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testStepCount, testStepCount, testPoint));
-                                                logFlag = 0;
-
-                                                //TODO: log result: steps,hypervol,
-                                            }
-                                        }
-                                        totalTestStepCount++;
-                                    }
-
-
-                                    //TODO:write first_selected_PA in CSV
-                                    /*************
-                                     * stepLogger for testing
-                                     * stepLogger.add(this.traceOpenLocations(finalStateCount, trace, nxcs, this.np));
-                                     *****/
-                                    ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
-
-
-                                    testStats.addAll(this.GetTestingPAResultInCSV(trailIndex, finalStateCount, nxcs, weight, first_Freward, actionSelect));
-
-                                    stepLogger_test.add(testStats);
-
-
-                                    finalStateCount++;
-
-                                    logger.info("avg steps:" + ((double) (totalTestStepCount)) / testStepCount);
-
-
-                                    //TODO:print reward_l(PA[1]),reward_r(PA[2]),deltaReward and maxReward
-//                                    this.printOpenLocationClassifiers(finalStateCount, nxcs, weight, this.np.obj1[obj_num]);
-
-
-                                    /*************
-                                     * stepLogger for training
-                                     * stepLogger.add(this.traceOpenLocations(finalStateCount, trace, nxcs, this.np));
-                                     *****/
-                                    ArrayList<StepSnapshot> trailStats = new ArrayList<StepSnapshot>();
-
-
-                                    trailStats.addAll(this.GetTrainingPAResultInCSV(trailIndex, finalStateCount, nxcs, weight, first_Freward));
-                                    stepLogger.add(trailStats);
-
-                                    logger.info(String.format("End of %d/%d,  weight: %f, %f", finalStateCount, this.mp.finalStateUpperBound, test_weight[0], test_weight[1]));
-                                }//loop test weight
 
                                 logged = true;
 
@@ -318,18 +180,18 @@ public abstract class MazeBase implements Environment {
                         } // endof z loop
 
                         //write result to csv
-                        stepLogger.writeLogAndCSVFiles(
-//                                    String.format("log/%s/%s/%s - %s - Trial %d - <TRIAL_NUM> - %d.csv", "MOXCS",
-//                                    "MAZE4", weight, this.np.obj1[obj_num], trailIndex, this.np.N),
-                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d.csv", "MOXCS",
-                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
-                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
-                                        this.np.obj1[obj_num], trailIndex, this.np.N));
-                        stepLogger_test.writeLogAndCSVFiles_TESTING(
-                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
-                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
-                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
-                                        this.np.obj1[obj_num], trailIndex, this.np.N));
+//                        stepLogger.writeLogAndCSVFiles(
+////                                    String.format("log/%s/%s/%s - %s - Trial %d - <TRIAL_NUM> - %d.csv", "MOXCS",
+////                                    "MAZE4", weight, this.np.obj1[obj_num], trailIndex, this.np.N),
+//                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d.csv", "MOXCS",
+//                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
+//                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
+//                                        this.np.obj1[obj_num], trailIndex, this.np.N));
+//                        stepLogger_test.writeLogAndCSVFiles_TESTING(
+//                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
+//                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
+//                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
+//                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
                     } // totalTrailCount loop
 
@@ -646,7 +508,7 @@ public abstract class MazeBase implements Environment {
 
             //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
 
-            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, this.stepCount, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
+            StepSnapshot result_row = new StepSnapshot(null, null, 0);//experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
 
             PAresult.add(result_row);
             //Q_weighted sum value for different weights
@@ -693,7 +555,7 @@ public abstract class MazeBase implements Environment {
 
             //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
 
-            StepSnapshot result_row = new StepSnapshot(experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_max, this.stepCount);
+            StepSnapshot result_row = new StepSnapshot(null, null, 0);//experiment_num, timestamp, weight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_max);
 
             PAresult.add(result_row);
             //Q_weighted sum value for different weights
@@ -705,10 +567,46 @@ public abstract class MazeBase implements Environment {
     }
 
 
-    public abstract ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths();
+    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths() {
+        ArrayList<ArrayList<StepSnapshot>> expect = new ArrayList<ArrayList<StepSnapshot>>();
+        ArrayList<StepSnapshot> e21 = new ArrayList<StepSnapshot>();
+        e21.add(new StepSnapshot(new Point(2, 1), new Point(1, 1), 1));
+        e21.add(new StepSnapshot(new Point(2, 1), new Point(6, 1), 4));
+        expect.add(e21);
+        ArrayList<StepSnapshot> e31 = new ArrayList<StepSnapshot>();
+        e31.add(new StepSnapshot(new Point(3, 1), new Point(1, 1), 2));
+        e31.add(new StepSnapshot(new Point(3, 1), new Point(6, 1), 3));
+        expect.add(e31);
+        ArrayList<StepSnapshot> e41 = new ArrayList<StepSnapshot>();
+        e41.add(new StepSnapshot(new Point(4, 1), new Point(6, 1), 2));
+        expect.add(e41);
+        ArrayList<StepSnapshot> e51 = new ArrayList<StepSnapshot>();
+        e51.add(new StepSnapshot(new Point(5, 1), new Point(6, 1), 1));
+        expect.add(e51);
+
+        return expect;
+    }
+
+
+    private HashMap<Integer, Point> getTestLocation() {
+        HashMap<Integer, Point> ret = new HashMap<Integer, Point>();
+        ret.put(0, new Point(2, 1));
+        ret.put(1, new Point(3, 1));
+        ret.put(2, new Point(4, 1));
+        ret.put(3, new Point(5, 1));
+        return ret;
+    }
+
+    private Point getTestLocation(Integer test, HashMap<Integer, Point> locations) {
+        if (locations.containsKey(test))
+            return locations.get(test);
+        else
+            return null;
+    }
+
 
     public MazeBase initialize(MazeParameters mp, NXCSParameters np, Hashtable<Point, ActionPareto> positionRewards) throws IOException {
-        logger.info("\n\n========================    " + this.getClass().getName()  + "   ================================");
+        logger.info("\n\n=================================================================");
 
         this.mp = mp;
         this.np = np;
@@ -862,5 +760,92 @@ public abstract class MazeBase implements Environment {
         logger.debug(codes);
 
         return dup;
+    }
+
+    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepLogger_test, double first_Freward, int trailIndex, double[] targetWeight) {
+        int[] actionSelect = null;
+        for (double[] test_weight : moeadObj.weights) {
+
+            Integer testStepCount = 0;
+            int totalTestStepCount = 0;
+
+            logger.info(String.format("Test on  weight: %f, %f ", test_weight[0], test_weight[1]));
+
+
+            //testing process for 4 open states from (2,1)
+            actionSelect = new int[this.openLocations.size()];
+            int logFlag = 0;
+            int resetPoint = 0;
+
+            this.resetToSamePosition(this.openLocations.get(testStepCount));
+            while (testStepCount < this.openLocations.size()) {
+                String state = this.getState();
+                logger.info(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, logFlag, this.getxy()));
+                int action = nxcs.classify(state, test_weight);
+
+                if (logFlag == 0) {
+                    actionSelect[resetPoint] = action;
+                }
+                // logger.info("choose action");
+                logFlag++;
+                //TODO:return the PA1[action]
+//                                        logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getxy()));
+
+                double selectedPA_reward = nxcs.getSelectPA(action, state);
+
+                ActionPareto r = this.getReward(state, action, first_Freward);
+
+                // logger.info("take testing:");
+                if (this.isEndOfProblem(this.getState())) {
+                    logger.info(String.format("@3 Test:%d, Steps:%d, state:%s", resetPoint, logFlag, this.getxy()));
+                    testStepCount++;
+                    if (testStepCount < this.openLocations.size()) {
+                        Point testPoint = this.openLocations.get(testStepCount); //this.getTestLocation(test, testLocations);
+                        resetPoint++;
+
+                        this.resetToSamePosition(testPoint);
+                        logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testStepCount, testStepCount, testPoint));
+                        logFlag = 0;
+                    }
+                }
+                totalTestStepCount++;
+            }
+
+
+            //TODO:write first_selected_PA in CSV
+            /*************
+             * stepLogger for testing
+             * stepLogger.add(this.traceOpenLocations(finalStateCount, trace, nxcs, this.np));
+             *****/
+            ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
+
+
+            testStats.addAll(this.GetTestingPAResultInCSV(trailIndex, finalStateCount, nxcs, targetWeight, first_Freward, actionSelect));
+
+            stepLogger_test.add(testStats);
+
+
+            finalStateCount++;
+
+            logger.info("avg steps:" + ((double) (totalTestStepCount)) / testStepCount);
+
+
+            //TODO:print reward_l(PA[1]),reward_r(PA[2]),deltaReward and maxReward
+//                                    this.printOpenLocationClassifiers(finalStateCount, nxcs, weight, this.np.obj1[obj_num]);
+
+
+            /*************
+             * stepLogger for training
+             * stepLogger.add(this.traceOpenLocations(finalStateCount, trace, nxcs, this.np));
+             *****/
+            ArrayList<StepSnapshot> trailStats = new ArrayList<StepSnapshot>();
+
+
+//        trailStats.addAll(this.GetTrainingPAResultInCSV(trailIndex, finalStateCount, nxcs, weight, first_Freward));
+//        stepLogger.add(trailStats);
+
+            logger.info(String.format("End of %d/%d,  weight: %f, %f", finalStateCount, this.mp.finalStateUpperBound, test_weight[0], test_weight[1]));
+        }//loop test weight
+        return null;
     }
 }

@@ -26,11 +26,11 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 5000;
-        mp.resultInterval = 4999;
+        mp.finalStateUpperBound = 2500;
+        mp.resultInterval = 2499;
         mp.logFolder = "log/maze1/csv/";
-        mp.rewardFile= "rewards/maze6.json";
-        mp.mazeFile= "data/maze6.txt";
+        mp.rewardFile= "rewards/maze4.json";
+        mp.mazeFile= "data/maze4.txt";
 
 
 
@@ -71,7 +71,7 @@ public class MazeRunner {
         np.obj1 = new int[]{100};
 
 
-        MazeBase maze = new maze6_weighted_sum(mp.mazeFile);
+        MazeBase maze = new maze4_weighted_sum(mp.mazeFile);
         ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
         File file = new File(classLoader.getResource(mp.rewardFile).getFile());
 

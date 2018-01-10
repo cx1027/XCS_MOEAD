@@ -52,10 +52,10 @@ public interface Environment {
     public void resetPosition();
 
     public void resetToSamePosition(Point location);
-
-    public ArrayList<StepSnapshot> GetTestingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1, int[] ActionSelect);
-
-    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1);
+//
+//    public ArrayList<StepSnapshot> GetTestingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1, int[] ActionSelect);
+//
+//    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1);
 
     public Point getCurrentLocation();
 }
