@@ -33,7 +33,7 @@ public class NXCS {
     /**
      * The current population of this system
      */
-    private final List<Classifier> population;
+    public final List<Classifier> population;
 
     /**
      * The current timestamp in this system
@@ -615,7 +615,7 @@ public class NXCS {
         }
 
         ParetoCal pareto = new ParetoCal();
-        return pareto.getPareto(currParentoCandidate);
+        return pareto.getPareto3(currParentoCandidate);
     }
 
 

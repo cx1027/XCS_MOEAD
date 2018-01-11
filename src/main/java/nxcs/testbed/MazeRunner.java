@@ -25,9 +25,9 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 2500;
-        mp.resultInterval = 2499;
+        mp.totalTrailCount = 3;
+        mp.finalStateUpperBound = 500;
+        mp.resultInterval = 250;
         mp.logFolder = "log/maze1/csv/";
         mp.rewardFile= "rewards/maze4.json";
         mp.mazeFile= "data/maze4.txt";

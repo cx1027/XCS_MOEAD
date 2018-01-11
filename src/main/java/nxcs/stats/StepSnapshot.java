@@ -18,7 +18,7 @@ public class StepSnapshot {
 
     private double first_reward;
     private double[] targtWeight;
-    private int objective;
+    private double objective;
     private double[] weight;
     private int steps;
     private double hyperVolumn;
@@ -68,6 +68,10 @@ public class StepSnapshot {
 
     public void setSteps(int steps) {
         this.steps = steps;
+    }
+
+    public void setHyperVolumn(double hyperVolumn) {
+        this.hyperVolumn = hyperVolumn;
     }
 
     public List<Point> getPath() {
@@ -127,7 +131,7 @@ public class StepSnapshot {
      * @param hyperVolumn
      */
     public StepSnapshot(int trailNumber, int timestamp, Point openState, Point finalState, double[] targetWeight
-            , int objective, double[] weight, int steps, double hyperVolumn) {
+            , double objective, double[] weight, int steps, double hyperVolumn) {
         this.trailNumber = trailNumber;
         this.timestamp = timestamp;
         this.openState = openState;
@@ -259,7 +263,10 @@ public class StepSnapshot {
 
 
     public String to_Total_CSV_PA() {
-        //trailNumber, timestamp, TargetWeight,TraceWeight, obj_r1, p, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min);
+        //trailNumber, timestamp, TargetWeight,TraceWeight, obj_r1, OpenState, FinalState
+        // , Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max
+        // , Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min
+        // , Q_total_left. Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select, steps, hyperVolumn);
 
         StringBuilder build = new StringBuilder();
         build.append(String.format("%d", this.trailNumber));

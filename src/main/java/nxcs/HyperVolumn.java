@@ -3,10 +3,11 @@ package nxcs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class HyperVolumn {
 	
-	public double calcHyperVolumn(ArrayList<Qvector> vList, Qvector refer) {
+	public double calcHyperVolumn(List<Qvector> vList, Qvector refer) {
 		double hper = 0;
 		vList = sortQvector(vList);// sort by the first value by ascending
 		for (int i = 0; i < vList.size(); i++) {
@@ -21,7 +22,7 @@ public class HyperVolumn {
 		return hper;
 	}
 
-	public ArrayList<Qvector> sortQvector(ArrayList<Qvector> vList) {
+	public List<Qvector> sortQvector(List<Qvector> vList) {
 		// Collections.sort(vList, (a, b) -> (int) ((a.getQvalue().get(0) - b.getQvalue().get(0)) * 10024));
 
 		Collections.sort(vList, new Comparator<Qvector>() {
