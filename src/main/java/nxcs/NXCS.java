@@ -152,7 +152,7 @@ public class NXCS {
     /**
      * Runs a single iteration of the learning process of this NXCS instance
      */
-    public void runIteration(int finalStateCount, String previousState, double[] weight, int i, double firstreward, List<double[]> MOEAD_Weights) {
+    public void runIteration(int finalStateCount, String previousState, double[] weight, double firstreward, List<double[]> MOEAD_Weights) {
         // action
         int action = INVALID_ACTION;
 

@@ -291,6 +291,7 @@ public class StepSnapshot {
         build.append(String.format("%f", this.Q_finalreward_delta));
         build.append(", ");
         build.append(String.format("%f", this.Q_finalreward_max));
+
         build.append(", ");
         build.append(String.format("%f", this.Q_steps_left));
         build.append(", ");
@@ -300,6 +301,7 @@ public class StepSnapshot {
         build.append(", ");
         build.append(String.format("%f", this.Q_steps_min));
         build.append(", ");
+
         build.append(String.format("%f", this.Q_total_left));
         build.append(", ");
         build.append(String.format("%f", this.Q_total_right));
@@ -309,6 +311,7 @@ public class StepSnapshot {
         build.append(String.format("%f", this.Q_steps_select));
         build.append(", ");
         build.append(String.format("%f", this.Q_total_select));
+
         build.append(", ");
         build.append(String.format("%d", this.steps));
         build.append(", ");

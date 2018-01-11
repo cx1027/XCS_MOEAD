@@ -96,6 +96,7 @@ public abstract class MazeBase implements Environment {
             int chartXInterval = ((this.mp.finalStateUpperBound / this.mp.numOfChartBars) > 10)
                     ? (this.mp.finalStateUpperBound / this.mp.numOfChartBars) / 10 * 10 : 10;
 
+            StepStatsLogger stepStatsLogger = new StepStatsLogger(chartXInterval, 0);
             //Loop weights
             for (Point pweight : this.np.weights) {
                 double[] targetWeight = new double[]{pweight.getX(), pweight.getY()};
@@ -122,12 +123,10 @@ public abstract class MazeBase implements Environment {
 
                         nxcs.generateCoveringClassifierbyWeight(this.openLocations, moeadObj.weights, this.np);
 
-                        int stepi = 1;
                         this.resetPosition();
 
                         this.finalStateCount = 1;
 
-                        StepStatsLogger stepStatsLogger = new StepStatsLogger(chartXInterval, 0);
 
                         logger.info(String.format("######### begin to run of: Weight:%s - first reward:%s - Trail#: %s ",
                                 targetWeight, this.np.obj1[obj_num], trailIndex));
@@ -136,11 +135,9 @@ public abstract class MazeBase implements Environment {
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
 
 //                            logger.info("final State Count:" + finalStateCount);
-                            logger.info(String.format("finalStateCount:%d, Current Location:%s", finalStateCount, this.getCurrentLocation()));
+                            logger.debug(String.format("finalStateCount:%d, Current Location:%s", finalStateCount, this.getCurrentLocation()));
 
-                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, stepi, this.np.obj1[obj_num], moeadObj.getWeights());
-
-                            stepi++;
+                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, this.np.obj1[obj_num], moeadObj.getWeights());
 
 
 //                            if (finalStateCount > 2497) {
@@ -182,15 +179,20 @@ public abstract class MazeBase implements Environment {
 //                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
 //                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
 //                                        this.np.obj1[obj_num], trailIndex, this.np.N));
-                        stepStatsLogger.writeLogAndCSVFiles_TESTING(
-                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
-                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
-                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
-                                        this.np.obj1[obj_num], trailIndex, this.np.N));
+
+//                        stepStatsLogger.writeLogAndCSVFiles_TESTING(
+//                                String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
+//                                        "Train", this.mp.fileTimestampFormat, trailIndex, this.np.N),
+//                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
+//                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
                     } // totalTrailCount loop
-
-                    logger.info(String.format("End of %d/%d, objective: %d, %d", finalStateCount, this.mp.finalStateUpperBound, obj_num, this.np.obj1[obj_num]));
+                    stepStatsLogger.writeLogAndCSVFiles_TESTING(
+                            String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
+                                    "Train", this.mp.fileTimestampFormat, 0, this.np.N),
+                            String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
+                                    this.np.obj1[obj_num], 0, this.np.N));
+                    logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, obj_num, this.np.obj1[obj_num]));
                 } // action selection loop
 
             }
@@ -601,7 +603,7 @@ public abstract class MazeBase implements Environment {
 
 
     public MazeBase initialize(MazeParameters mp, NXCSParameters np, Hashtable<Point, ActionPareto> positionRewards) throws IOException {
-        logger.info("\n\n=================================================================");
+        logger.info("\n\n=========================   "+ this.getClass().getName()+"   ========================================");
 
         this.mp = mp;
         this.np = np;
@@ -770,19 +772,18 @@ public abstract class MazeBase implements Environment {
                 Integer testLocationIndex = 0;
                 int totalTestStepCount = 0;
 
-                logger.info(String.format("Test on  weight: %f, %f ", traceMoeadWeight[0], traceMoeadWeight[1]));
+                logger.debug(String.format("Test on  weight: %f, %f ", traceMoeadWeight[0], traceMoeadWeight[1]));
 
 
-                int logFlag = 0;
                 int resetPoint = 0;
                 Point openState = this.openLocations.get(testLocationIndex);
                 this.resetToSamePosition(openState);
                 hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
-                try {
-                    paretoCandidates.put(openState, getParetoByState(nxcs, openState, moeadObj.weights));
-                } catch (Exception e) {
-                    logger.info("Error for adding paretos");
-                }
+//                try {
+//                    paretoCandidates.put(openState, getParetoByState(nxcs, openState, moeadObj.weights));
+//                } catch (Exception e) {
+//                    logger.info("Error for adding paretos");
+//                }
                 while (testLocationIndex < this.openLocations.size()) {
                     String state = this.getState();
                     logger.info(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
@@ -803,16 +804,15 @@ public abstract class MazeBase implements Environment {
                                 , objective, traceMoeadWeight, this.stepCount, 0);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                         weightStats.add(row);
-                        logger.info(String.format("@3 Test:%d, Steps:%d, state:%s", resetPoint, logFlag, this.getCurrentLocation()));
-                        logger.info(String.format("##Collectd row:\t%s", row.to_Total_CSV_PA()));
+                        logger.info(String.format("@3 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
+                        //logger.info(String.format("##Collectd row:\t%s", row.to_Total_CSV_PA()));
                         testLocationIndex++;
                         if (testLocationIndex < this.openLocations.size()) {
-                            Point testPoint = this.openLocations.get(testLocationIndex); //this.getTestLocation(test, testLocations);
+                            openState = this.openLocations.get(testLocationIndex); //this.getTestLocation(test, testLocations);
                             resetPoint++;
 
-                            this.resetToSamePosition(testPoint);
-                            logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testLocationIndex, testLocationIndex, testPoint));
-                            logFlag = 0;
+                            this.resetToSamePosition(openState);
+                            logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testLocationIndex, testLocationIndex, openState));
                         }
                     }
                     totalTestStepCount++;
