@@ -40,7 +40,7 @@ public class maze4_weighted_sum extends MazeBase {
 
 //                printOpenLocationClassifiers(0, this, null, null, first_reward);
                 resetPosition();
-                logger.info(String.format("RESET Position stepCount>100, %s, reset to random position:%s", p, this.getCurrentLocation()));
+                logger.info(String.format("Cannot go to final state from: %s after 100 steps, reset to random position:%s", p, this.getCurrentLocation()));
 //				action = -1;
 //                logger.info("reset:" + "x:" + x + " y:" + y);
                 reward.setPareto(new Qvector(-1, 0));//
@@ -162,21 +162,24 @@ public class maze4_weighted_sum extends MazeBase {
     }
 
     @Override
-    public boolean isTraceConditionMeet()
-    {
-        return (this.finalStateCount % this.mp.resultInterval == 0
-                || (this.finalStateCount < 4 )
+    public boolean isTraceConditionMeet() {
+        return (this.finalStateCount % this.mp.resultInterval == 0)
+                || (this.finalStateCount < 5)
                 || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
-                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0));
+                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)
+                ;
     }
 
     @Override
-    public List<double[]> getTraceWeight(List<double[]> traceWeights)
-    {
-        List<double[]> ret = new ArrayList<>();
-        ret.add(new double[]{0.0d, 1.0d});
-        ret.add(new double[]{0.56d, 0.44d});
-        ret.add(new double[]{1.0d, 0.0d});
+    public List<double[]> getTraceWeight(List<double[]> traceWeights) {
+        List<double[]> ret = new ArrayList<double[]>();
+        //traceWeights.clear();
+//        traceWeights.add(new double[]{0.0d, 1.0d});
+//        traceWeights.add(new double[]{0.56d, 0.44d});
+//        traceWeights.add(new double[]{1.0d, 0.0d});
+        ret.add(traceWeights.get(0));
+        ret.add(traceWeights.get(12));
+        ret.add(traceWeights.get(traceWeights.size()-1));
         return ret;
     }
 }

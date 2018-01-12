@@ -6,8 +6,6 @@ import nxcs.moead.MOEAD;
 import nxcs.stats.StepSnapshot;
 import nxcs.stats.StepStatsLogger;
 import nxcs.utils.HyperVolumn;
-import nxcs.utils.ParetoCalcOrg;
-import nxcs.utils.ParetoCalculator;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -15,6 +13,7 @@ import java.io.*;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 /**
  * Represents a maze problem which is loaded in from a file. Such a file should
@@ -91,21 +90,6 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     public void run() throws Exception {
-//        ParetoCalculator pc = new ParetoCalculator();
-//        ParetoCalcOrg pco = new ParetoCalcOrg();
-//        HyperVolumn hv = new HyperVolumn();
-//        List<ActionPareto> ap = new ArrayList<>();
-//        //ap.add(new ActionPareto(new Qvector(1,1),0));
-//        ap.add(new ActionPareto(new Qvector(-2,2),0));
-//        ap.add(new ActionPareto(new Qvector(-1,3),0));
-//        double orgo = hv.calcHyperVolumn(pco.getPareto(ap),new Qvector(-10, -10));
-//        double org = hv.calcHyperVolumn(pc.getPareto(ap),new Qvector(-10, -10));
-//
-//        double result = this.getHyperVolumn(ap);
-//        ap.clear();
-//        ap.add(new ActionPareto(new Qvector(2,2),0));
-//        ap.add(new ActionPareto(new Qvector(1,3),0));
-//        double result2 = this.getHyperVolumn(ap);
 
         try {
 
@@ -175,8 +159,7 @@ public abstract class MazeBase implements Environment, ITrace {
                             }
 
                             // analyst results
-                            // if (((finalStateCount % resultInterval ==
-                            // 0)||(finalStateCount<100)) && !logged) {
+                            //if (((finalStateCount % this.mp.resultInterval == 0)) && !logged) {
                             if (this.isTraceConditionMeet() && !logged) {
                                 // test algorithem
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
@@ -694,6 +677,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         }
 
+
         this.hyperVolumnCalculator = hyperVolumnCalculator;
         this.paretoCalculator = paretoCalculator;
 
@@ -777,8 +761,8 @@ public abstract class MazeBase implements Environment, ITrace {
         return dup;
     }
 
-    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, double first_Freward, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
-
+    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, double first_Freward, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception
+    {
         ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
 
         for (double[] traceMoeadWeight : this.getTraceWeight(moeadObj.weights)) {
@@ -804,17 +788,16 @@ public abstract class MazeBase implements Environment, ITrace {
 //                }
             while (testLocationIndex < this.openLocations.size()) {
                 String state = this.getState();
-                logger.info(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
+                logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
                 int action = nxcs.classify(state, traceMoeadWeight);
 
                 //TODO:return the PA1[action]
-//                                        logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getCurrentLocation()));
+                //logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getCurrentLocation()));
 
                 double selectedPA_reward = nxcs.getSelectPA(action, state);
 
                 ActionPareto r = this.getReward(state, action, first_Freward);
 
-                // logger.info("take testing:");
                 if (this.isEndOfProblem(this.getState())) {
                     hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
 
@@ -830,7 +813,7 @@ public abstract class MazeBase implements Environment, ITrace {
                         resetPoint++;
 
                         this.resetToSamePosition(openState);
-                        logger.info(String.format("Reset to Test:%d, resetPoint:%d, testLocation:%s", testLocationIndex, testLocationIndex, openState));
+                        logger.info(String.format("Progress.....Reset to location:%s", openState));
                     }
                 }
                 totalTestStepCount++;
@@ -843,7 +826,6 @@ public abstract class MazeBase implements Environment, ITrace {
 
             logger.info(String.format("End of trail:%d, %d/%d,  weight: %f, %f", trailIndex, finalStateCount, this.mp.finalStateUpperBound, traceMoeadWeight[0], traceMoeadWeight[1]));
         }//loop test weight
-
 
         return testStats;
     }
@@ -870,11 +852,10 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     public boolean isTraceConditionMeet() {
-        return (this.finalStateCount % this.mp.resultInterval == 0 || this.finalStateCount < 20);
+        return (this.finalStateCount % this.mp.resultInterval == 0);
     }
 
-    public List<double[]> getTraceWeight(List<double[]> traceWeights)
-    {
+    public List<double[]> getTraceWeight(List<double[]> traceWeights) {
         return traceWeights;
     }
 }
