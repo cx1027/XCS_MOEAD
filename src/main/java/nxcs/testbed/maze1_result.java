@@ -23,7 +23,7 @@ package nxcs.testbed;//package nxcs.testbed;
 //import nxcs.ActionPareto;
 //import nxcs.Classifier;
 //import nxcs.Environment;
-//import nxcs.HyperVolumn;
+//import nxcs.utils.HyperVolumn;
 //import nxcs.NXCS;
 //import nxcs.NXCSParameters;
 //import nxcs.PathStep;

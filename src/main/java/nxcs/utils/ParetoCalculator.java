@@ -1,20 +1,23 @@
-package nxcs;
+package nxcs.utils;
 
 import com.rits.cloning.Cloner;
+import nxcs.ActionPareto;
+import nxcs.Qvector;
+import nxcs.common.IParetoCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParetoCal {
+public class ParetoCalculator implements IParetoCalculator {
 	private Cloner cloner;
 
 	private List<ArrayList<Double>> candidatelist;
 
-	// public ParetoCal(List<ArrayList<Double>> candidatelist) {
+	// public ParetoCalculator(List<ArrayList<Double>> candidatelist) {
 	// this.candidatelist = candidatelist;
 	// }
 
-	public ParetoCal() {
+	public ParetoCalculator() {
 		this.cloner = new Cloner();
 	}
 
@@ -42,12 +45,12 @@ public class ParetoCal {
 				for (int j = 0; j < archivinglist.size(); j++) {
 					Qvector archiving = archivinglist.get(j);
 					result = Dominate(candidate.getPareto(), archiving);
-					if (result == 2) {// candidate is non donminate
+					if (result == CANDIDATE_IS_BETTER) {// candidate is non donminate
 						// archivinglist.remove(archiving);
 						removeList.add(archiving);
-					} else if (result == 1) {// both non dominate
+					} else if (result == CANDIDATE_IS_SAME_AS_ARCHIVING) {// both non dominate
 						continue;
-					} else if (result == 3) {// archiving is non dominate
+					} else if (result == ARCHIVING_IS_BETTER) {// archiving is non dominate
 						flag = false;
 						break;
 					}
@@ -92,12 +95,12 @@ public class ParetoCal {
 				for (int j = 0; j < archivinglist.size(); j++) {
 					ActionPareto archiving = archivinglist.get(j);
 					result = Dominate(candidate, archiving);
-					if (result == 2) {// candidate is non donminate
+					if (result == CANDIDATE_IS_BETTER) {// candidate is non donminate
 						// archivinglist.remove(archiving);
 						removeList.add(archiving);
-					} else if (result == 1) {// both non dominate
+					} else if (result == CANDIDATE_IS_SAME_AS_ARCHIVING) {// both non dominate
 						continue;
-					} else if (result == 3) {// archiving is non dominate
+					} else if (result == ARCHIVING_IS_BETTER) {// archiving is non dominate
 						flag = false;
 						break;
 					}
@@ -142,12 +145,12 @@ public class ParetoCal {
 				for (int j = 0; j < archivinglist.size(); j++) {
 					Qvector archiving = archivinglist.get(j);
 					result = Dominate(candidate, archiving);
-					if (result == 2) {// candidate is non donminate
+					if (result == CANDIDATE_IS_BETTER) {// candidate is non donminate
 						// archivinglist.remove(archiving);
 						removeList.add(archiving);
-					} else if (result == 1) {// both non dominate
+					} else if (result == CANDIDATE_IS_SAME_AS_ARCHIVING) {// both non dominate
 						continue;
-					} else if (result == 3) {// archiving is non dominate
+					} else if (result == ARCHIVING_IS_BETTER) {// archiving is non dominate
 						flag = false;
 						break;
 					}
@@ -170,33 +173,27 @@ public class ParetoCal {
 
 	public int Dominate(ActionPareto candidate, ActionPareto archiving) {
 		int result = 0;
-		if ((candidate.getPareto().get(0) > archiving.getPareto().get(0)
-				&& candidate.getPareto().get(1) < archiving.getPareto().get(1))
-				|| (candidate.getPareto().get(0) < archiving.getPareto().get(0)
-				&& candidate.getPareto().get(1) > archiving.getPareto().get(1))) {
-			result = 1;
+		if ((candidate.getPareto().get(0) > archiving.getPareto().get(0) && candidate.getPareto().get(1) < archiving.getPareto().get(1))
+				|| (candidate.getPareto().get(0) < archiving.getPareto().get(0) && candidate.getPareto().get(1) > archiving.getPareto().get(1))) {
+			result = CANDIDATE_IS_SAME_AS_ARCHIVING;
 		} else if (candidate.getPareto().get(0) >= archiving.getPareto().get(0)
 				&& candidate.getPareto().get(1) >= archiving.getPareto().get(1)) {
-			result = 2;
+			result = CANDIDATE_IS_BETTER;
 		} else if (candidate.getPareto().get(0) <= archiving.getPareto().get(0)
 				&& candidate.getPareto().get(1) <= archiving.getPareto().get(1)) {
-			result = 3;
+			result = ARCHIVING_IS_BETTER;
 		}
 		return result;
 	}
 	public int Dominate(Qvector candidate, Qvector archiving) {
 		int result = 0;
-		if ((candidate.get(0) > archiving.get(0)
-				&& candidate.get(1) < archiving.get(1))
-				|| (candidate.get(0) < archiving.get(0)
-				&& candidate.get(1) > archiving.get(1))) {
-			result = 1;
-		} else if (candidate.get(0) >= archiving.get(0)
-				&& candidate.get(1) >= archiving.get(1)) {
-			result = 2;
-		} else if (candidate.get(0) <= archiving.get(0)
-				&& candidate.get(1) <= archiving.get(1)) {
-			result = 3;
+		if ((candidate.get(0) > archiving.get(0) && candidate.get(1) < archiving.get(1))
+				|| (candidate.get(0) < archiving.get(0) && candidate.get(1) > archiving.get(1))) {
+			result = CANDIDATE_IS_SAME_AS_ARCHIVING;
+		} else if (candidate.get(0) >= archiving.get(0) && candidate.get(1) >= archiving.get(1)) {
+			result = CANDIDATE_IS_BETTER;
+		} else if (candidate.get(0) <= archiving.get(0) && candidate.get(1) <= archiving.get(1)) {
+			result = ARCHIVING_IS_BETTER;
 		}
 		return result;
 	}

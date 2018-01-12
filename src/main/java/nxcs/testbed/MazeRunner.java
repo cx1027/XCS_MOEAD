@@ -1,11 +1,11 @@
 package nxcs.testbed;
 
 
-import nxcs.ActionPareto;
-import nxcs.NXCSParameters;
-import nxcs.Qvector;
+import nxcs.*;
 import nxcs.common.MazeBase;
 import nxcs.common.MazeParameters;
+import nxcs.utils.HyperVolumn;
+import nxcs.utils.ParetoCalculatorSkew;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,8 +25,8 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        mp.totalTrailCount = 3;
-        mp.finalStateUpperBound = 5000;
+        mp.totalTrailCount = 1;
+        mp.finalStateUpperBound = 3000;
         mp.resultInterval = 50;
         mp.logFolder = "log/maze1/csv/";
         mp.rewardFile= "rewards/maze4.json";
@@ -86,11 +86,14 @@ public class MazeRunner {
             // loop array
             JSONArray msg = (JSONArray) jsonObject.get("rewards");
             iterator = msg.iterator();
+
+            //initialize and run
+            maze.initialize(mp, np, parseReward(iterator),new HyperVolumn(),new ParetoCalculatorSkew()).run();
         } catch (Exception e) {
             System.out.println(e.toString());
         }
 
-        maze.initialize(mp, np, parseReward(iterator) ).run();
+
     }
 
 

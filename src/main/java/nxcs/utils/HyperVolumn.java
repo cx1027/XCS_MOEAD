@@ -1,4 +1,6 @@
-package nxcs;
+package nxcs.utils;
+
+import nxcs.Qvector;
 
 import java.util.ArrayList;
 import java.util.Collections;

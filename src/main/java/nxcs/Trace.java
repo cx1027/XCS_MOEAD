@@ -48,7 +48,7 @@ package nxcs;//package nxcs;
 //
 //	private addVectorNList addVL;
 //
-//	private ParetoCal pareto;
+//	private ParetoCalculator pareto;
 //
 //	private Cloner cloner;
 //
@@ -130,7 +130,7 @@ package nxcs;//package nxcs;
 //			}
 //		}
 //		// Call pareto function
-//		pareto = new ParetoCal();
+//		pareto = new ParetoCalculator();
 //		List<ActionPareto> ParetoDotwithA = pareto.getPareto(NDdots);
 //
 //		return ParetoDotwithA;

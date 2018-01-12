@@ -8,6 +8,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class maze4_weighted_sum extends MazeBase {
 
@@ -158,5 +159,24 @@ public class maze4_weighted_sum extends MazeBase {
         expect.add(e66);
 
         return expect;
+    }
+
+    @Override
+    public boolean isTraceConditionMeet()
+    {
+        return (this.finalStateCount % this.mp.resultInterval == 0
+                || (this.finalStateCount < 4 )
+                || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
+                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0));
+    }
+
+    @Override
+    public List<double[]> getTraceWeight(List<double[]> traceWeights)
+    {
+        List<double[]> ret = new ArrayList<>();
+        ret.add(new double[]{0.0d, 1.0d});
+        ret.add(new double[]{0.56d, 0.44d});
+        ret.add(new double[]{1.0d, 0.0d});
+        return ret;
     }
 }

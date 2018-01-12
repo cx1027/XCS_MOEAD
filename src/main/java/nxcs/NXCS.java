@@ -3,6 +3,7 @@ package nxcs;
 import nxcs.distance.DistanceCalculatorUtil;
 import nxcs.moead.MOEAD;
 import nxcs.moead.Sorting;
+import nxcs.common.IParetoCalculator;
 
 import java.awt.*;
 import java.util.*;
@@ -60,6 +61,7 @@ public class NXCS {
     public List<Classifier> moead_actionSet = new ArrayList<Classifier>();
 
     private MOEAD moead;
+    private IParetoCalculator paretoCalculator;
 
     /**
      * Constructs an NXCS instance, operating on the given environment with the
@@ -68,7 +70,7 @@ public class NXCS {
      * @param _env    The environment this system is to operate on
      * @param _params The parameters this system is to use
      */
-    public NXCS(Environment _env, NXCSParameters _params) {
+    public NXCS(Environment _env, NXCSParameters _params, IParetoCalculator paretoCalculator) {
         if (_env == null)
             throw new IllegalArgumentException("Cannot operate on null environment");
         if (_params == null)
@@ -76,6 +78,7 @@ public class NXCS {
 
         env = _env;
         params = _params;
+        this.paretoCalculator = paretoCalculator;
         population = new ArrayList<Classifier>();
         timestamp = 0;
     }
@@ -614,8 +617,7 @@ public class NXCS {
             currParentoCandidate.add(i, new ActionPareto(new Qvector(PA1[i], PA2[i]), i));
         }
 
-        ParetoCal pareto = new ParetoCal();
-        return pareto.getPareto3(currParentoCandidate);
+        return paretoCalculator.getPareto3(currParentoCandidate);
     }
 
 
