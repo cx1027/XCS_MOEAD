@@ -725,8 +725,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return dup;
     }
 
-    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, double first_Freward, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception
-    {
+    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, double first_Freward, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
         ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
 
         for (double[] traceMoeadWeight : this.getTraceWeight(moeadObj.weights)) {
@@ -735,57 +734,45 @@ public abstract class MazeBase implements Environment, ITrace {
             Hashtable<Point, ArrayList<ActionPareto>> paretoCandidates = new Hashtable<>();
             double hyperVolumnSum = 0;
 
-            Integer testLocationIndex = 0;
-            int totalTestStepCount = 0;
-
             logger.debug(String.format("Test on  weight: %f, %f ", traceMoeadWeight[0], traceMoeadWeight[1]));
 
 
             int resetPoint = 0;
-            Point openState = this.openLocations.get(testLocationIndex);
-            this.resetToSamePosition(openState);
-            hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
-//                try {
-//                    paretoCandidates.put(openState, getParetoByState(nxcs, openState, moeadObj.weights));
-//                } catch (Exception e) {
-//                    logger.info("Error for adding paretos");
-//                }
-            while (testLocationIndex < this.openLocations.size()) {
-                String state = this.getState();
-                logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
-                int action = nxcs.classify(state, traceMoeadWeight);
 
-                //TODO:return the PA1[action]
-                //logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getCurrentLocation()));
+            for (Point openState: this.openLocations) {
+                this.resetToSamePosition(openState);
+                List<Point> path = new ArrayList<>();
+                path.add(openState);
 
-                double selectedPA_reward = nxcs.getSelectPA(action, state);
+                while (!this.isEndOfProblem(this.getState())) {
+                    String state = this.getState();
+                    logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
+                    int action = nxcs.classify(state, traceMoeadWeight);
 
-                ActionPareto r = this.getReward(state, action, first_Freward);
-                if (this.isEndOfProblem(this.getState())) {
-                    hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
+                    //TODO:return the PA1[action]
+                    //logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getCurrentLocation()));
 
-                    StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
-                            , objective, traceMoeadWeight, this.stepCount, 0, null);
-                    //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
-                    weightStats.add(row);
-                    logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
-                    //logger.info(String.format("##Collectd row:\t%s", row.to_Total_CSV_PA()));
-                    testLocationIndex++;
-                    if (testLocationIndex < this.openLocations.size()) {
-                        openState = this.openLocations.get(testLocationIndex); //this.getTestLocation(test, testLocations);
-                        resetPoint++;
+                    //double selectedPA_reward = nxcs.getSelectPA(action, state);
+                    //ActionPareto r = this.getReward(state, action, first_Freward);
+                    this.move(action);
+                    path.add(this.getCurrentLocation());
 
-                        this.resetToSamePosition(openState);
-                        logger.info(String.format("Progress.....Reset to location:%s", openState));
-                    }
+                    if (this.isEndOfProblem(this.getState())) {
+                        hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
+
+                        StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
+                                , objective, traceMoeadWeight, this.stepCount, 0, path);
+                        //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
+                        weightStats.add(row);
+                        logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
+                        //logger.info(String.format("##Collectd row:\t%s", row.to_Total_CSV_PA()));
+                     }
                 }
-                totalTestStepCount++;
             }
             final double hypersum = hyperVolumnSum;
             weightStats.stream().forEach(x -> x.setHyperVolumn(hypersum));
             testStats.addAll(weightStats);
             stepStatsLogger.add(weightStats);
-            //finalStateCount++;
 
             logger.info(String.format("End of trail:%d, %d/%d,  weight: %f, %f", trailIndex, finalStateCount, this.mp.finalStateUpperBound, traceMoeadWeight[0], traceMoeadWeight[1]));
         }//loop test weight
