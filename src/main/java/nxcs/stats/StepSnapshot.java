@@ -131,7 +131,7 @@ public class StepSnapshot {
      * @param hyperVolumn
      */
     public StepSnapshot(int trailNumber, int timestamp, Point openState, Point finalState, double[] targetWeight
-            , double objective, double[] weight, int steps, double hyperVolumn) {
+            , double objective, double[] weight, int steps, double hyperVolumn, List<Point> path) {
         this.trailNumber = trailNumber;
         this.timestamp = timestamp;
         this.openState = openState;
@@ -141,6 +141,7 @@ public class StepSnapshot {
         this.weight = weight;
         this.steps = steps;
         this.hyperVolumn = hyperVolumn;
+        this.path = path;
     }
 
     public StepSnapshot(Point openState, Point finalState, int steps, ArrayList<Point> path) {
@@ -316,13 +317,13 @@ public class StepSnapshot {
         build.append(String.format("%d", this.steps));
         build.append(", ");
         build.append(String.format("%f", this.hyperVolumn));
-//		build.append(", ");
-//
-//		if (this.path.size() > 0)
-//			for (Point p : this.path) {
-//				build.append(String.format("->(%d-%d)", (int) p.getX(), (int) p.getY()));
-//			}
-//		build.append("->");
+		build.append(", ");
+
+		if (this.path.size() > 0)
+			for (Point p : this.path) {
+				build.append(String.format("->(%d-%d)", (int) p.getX(), (int) p.getY()));
+			}
+		//build.append("->");
         build.append("\n");
 
         return build.toString();

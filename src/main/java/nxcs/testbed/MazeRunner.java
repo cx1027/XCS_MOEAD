@@ -31,6 +31,7 @@ public class MazeRunner {
         mp.logFolder = "log/maze1/csv/";
         mp.rewardFile= "rewards/maze4.json";
         mp.mazeFile= "data/maze4.txt";
+        mp.logLowerFinalState = true;
 
 
 

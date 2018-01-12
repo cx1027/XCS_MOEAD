@@ -12,6 +12,7 @@ public class MazeParameters {
     public String logFolder;
     public String mazeFile;
     public String rewardFile;
+    public boolean logLowerFinalState;
 
     public String getFileTimestampFormat() {
         return fileTimestampFormat;

@@ -164,9 +164,9 @@ public class maze4_weighted_sum extends MazeBase {
     @Override
     public boolean isTraceConditionMeet() {
         return (this.finalStateCount % this.mp.resultInterval == 0)
-                || (this.finalStateCount < 5)
-                || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
-                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)
+                || (this.mp.logLowerFinalState && ((this.finalStateCount < 5)
+                        || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
+                        || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
                 ;
     }
 

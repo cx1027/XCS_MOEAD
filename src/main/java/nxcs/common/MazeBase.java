@@ -217,18 +217,12 @@ public abstract class MazeBase implements Environment, ITrace {
         x = randomOpenPoint.x;
         y = randomOpenPoint.y;
         stepCount = 0;
-        // x = 1;
-        // y = 1;
-        // stepCount = 0;
     }
 
     public void resetToSamePosition(Point xy) {
         x = xy.x;
         y = xy.y;
         stepCount = 0;
-        // x = 1;
-        // y = 1;
-        // stepCount = 0;
     }
 
 
@@ -293,36 +287,6 @@ public abstract class MazeBase implements Environment, ITrace {
     public Point getxy() {
         return new Point(x, y);
     }
-
-    // public Qvector getReward(String state, int action) {
-    // stepCount++;
-    // Qvector reward = new Qvector(-1, 0);
-    //
-    // Point movement = actions.get(action);
-    // if (isValidPosition(x + movement.x, y + movement.y)) {
-    // x += movement.x;
-    // y += movement.y;
-    // }
-    //
-    // if (x == 1 && y == 1) {
-    // reward.setQvalue(-1, 1);
-    // // resetPosition();
-    // }
-    //
-    // if (x == 1 && y == 6) {
-    // reward.setQvalue(-1, 10);
-    // // resetPosition();
-    // }
-    //
-    // if (stepCount > 100) {
-    // resetPosition();
-    // action=-1;//???
-    // reward.setQvalue(-1, 0);
-    // }
-    //
-    // return reward;
-    // }
-
 
     public abstract ActionPareto getReward(String state, int action, double first_reward);
 
@@ -797,12 +761,11 @@ public abstract class MazeBase implements Environment, ITrace {
                 double selectedPA_reward = nxcs.getSelectPA(action, state);
 
                 ActionPareto r = this.getReward(state, action, first_Freward);
-
                 if (this.isEndOfProblem(this.getState())) {
                     hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
 
                     StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
-                            , objective, traceMoeadWeight, this.stepCount, 0);
+                            , objective, traceMoeadWeight, this.stepCount, 0, null);
                     //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                     weightStats.add(row);
                     logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
