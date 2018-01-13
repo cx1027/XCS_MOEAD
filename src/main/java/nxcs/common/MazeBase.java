@@ -746,8 +746,8 @@ public abstract class MazeBase implements Environment, ITrace {
 
                 while (!this.isEndOfProblem(this.getState())) {
                     String state = this.getState();
-                    logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s", resetPoint, this.stepCount, this.getCurrentLocation()));
                     int action = nxcs.classify(state, traceMoeadWeight);
+                    logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s, action:%d", resetPoint, this.stepCount, this.getCurrentLocation(), action));
 
                     //TODO:return the PA1[action]
                     //logger.info(String.format("@2 Timestamp:%d, test:%d, resetPoint:%d, logFlag:%d, state:%s", timestamp, test, resetPoint, logFlag, this.getCurrentLocation()));
@@ -759,7 +759,12 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
-
+                        //if path>100(step>100) means fail to reach the final state
+                        if(path.size()>100)
+                        {
+                            this.stepCount = 0;
+                            path.clear();
+                        }
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn

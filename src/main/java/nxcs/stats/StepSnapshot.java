@@ -3,6 +3,7 @@ package nxcs.stats;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StepSnapshot {
     /***
@@ -320,11 +321,8 @@ public class StepSnapshot {
 		build.append(", ");
 
 		if (this.path.size() > 0)
-			for (Point p : this.path) {
-				build.append(String.format("->(%d-%d)", (int) p.getX(), (int) p.getY()));
-			}
-		//build.append("->");
-        build.append("\n");
+            build.append(path.stream ().map (p -> String.format("->(%d-%d)", (int) p.getX(), (int) p.getY())).collect (Collectors.joining ("->")));
+		build.append("\n");
 
         return build.toString();
     }

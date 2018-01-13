@@ -31,20 +31,9 @@ public class maze4_weighted_sum extends MazeBase {
     public ActionPareto getReward(String state, int action, double first_reward) {
         stepCount++;
         ActionPareto reward = new ActionPareto(new Qvector(-1, 0), 1);
-
         try {
             this.move(action);
 
-            if (stepCount > 100) {
-                Point p = this.getCurrentLocation();
-
-//                printOpenLocationClassifiers(0, this, null, null, first_reward);
-                resetPosition();
-                logger.info(String.format("Cannot go to final state from: %s after 100 steps, reset to random position:%s", p, this.getCurrentLocation()));
-//				action = -1;
-//                logger.info("reset:" + "x:" + x + " y:" + y);
-                reward.setPareto(new Qvector(-1, 0));//
-            }
             if (this.isEndOfProblem(this.getState()))
                 reward = this.positionRewards.get(new Point(this.x, this.y));
         } catch (Exception e) {
@@ -53,6 +42,18 @@ public class maze4_weighted_sum extends MazeBase {
         }
 
         return reward;
+    }
+
+    public void move(int action)
+    {
+        super.move(action);
+
+        if (stepCount > 100) {
+            Point p = this.getCurrentLocation();
+            this.resetPosition();
+            logger.info(String.format("Cannot go to final state from: %s after 100 steps, reset to random position:%s", p, this.getCurrentLocation()));
+
+        }
     }
 
     public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths() {
