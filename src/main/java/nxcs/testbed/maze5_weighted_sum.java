@@ -80,6 +80,7 @@ public class maze5_weighted_sum extends MazeBase {
 //        traceWeights.add(new double[]{1.0d, 0.0d});
         ret.add(traceWeights.get(0));
         ret.add(traceWeights.get(12));
+        ret.add(traceWeights.get(13));
         ret.add(traceWeights.get(traceWeights.size()-1));
         return ret;//traceWeights;
     }
