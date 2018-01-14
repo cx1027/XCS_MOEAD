@@ -181,6 +181,6 @@ public class maze4_weighted_sum extends MazeBase {
         ret.add(traceWeights.get(0));
         ret.add(traceWeights.get(12));
         ret.add(traceWeights.get(traceWeights.size()-1));
-        return ret;
+        return ret;//traceWeights;
     }
 }

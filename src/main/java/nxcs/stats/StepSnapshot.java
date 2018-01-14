@@ -272,56 +272,56 @@ public class StepSnapshot {
 
         StringBuilder build = new StringBuilder();
         build.append(String.format("%d", this.trailNumber));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%d", this.timestamp));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f|%f", this.targtWeight[0],   this.targtWeight[1]));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f|%f", this.weight[0],   this.weight[1]));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.first_reward));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("(%d-%d)", (int) this.openState.getX(), (int) this.openState.getY()));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("(%d-%d)", (int) this.finalState.getX(), (int) this.finalState.getY()));
-        build.append(", ");
+        build.append(",");
 
         build.append(String.format("%f", this.Q_finalreward_left));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_finalreward_right));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_finalreward_delta));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_finalreward_max));
 
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_steps_left));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_steps_right));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_steps_delta));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_steps_min));
-        build.append(", ");
+        build.append(",");
 
         build.append(String.format("%f", this.Q_total_left));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_total_right));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_finalreward_select));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_steps_select));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.Q_total_select));
 
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%d", this.steps));
-        build.append(", ");
+        build.append(",");
         build.append(String.format("%f", this.hyperVolumn));
-		build.append(", ");
+		build.append(",");
 
 		if (this.path.size() > 0)
-            build.append(path.stream ().map (p -> String.format("->(%d-%d)", (int) p.getX(), (int) p.getY())).collect (Collectors.joining ("->")));
+            build.append(path.stream ().map (p -> String.format("(%d-%d)", (int) p.getX(), (int) p.getY())).collect (Collectors.joining ("->")));
 		build.append("\n");
 
         return build.toString();
