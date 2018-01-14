@@ -8,19 +8,15 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Represents a maze problem which is loaded in from a file. Such a file should
- * contain a rectangular array of 'O', 'T' and 'F' characters. A sample is given
- * in Mazes/Woods1.txt
- */
 public class maze6_weighted_sum extends MazeBase {
 
     /**
      * Loads a maze from the given maze file
      *
      * @param mazeFile The filename of the maze to load
-     * @throws java.io.IOException On standard IO problems
+     * @throws IOException On standard IO problems
      */
     public maze6_weighted_sum(String mazeFile) throws IOException {
         super(new File(mazeFile));
@@ -38,13 +34,6 @@ public class maze6_weighted_sum extends MazeBase {
 
         try {
             this.move(action);
-            logger.debug("Current Location:" + this.getCurrentLocation());
-            if (stepCount > 100) {
-//                logger.info("stepCount>100:");
-//                printOpenLocationClassifiers(0, this, null, null, first_reward);
-                resetPosition();
-                reward.setPareto(new Qvector(-1, 0));//
-            }
             if (this.isEndOfProblem(this.getState()))
                 reward = this.positionRewards.get(new Point(this.x, this.y));
         } catch (Exception e) {
@@ -55,7 +44,43 @@ public class maze6_weighted_sum extends MazeBase {
         return reward;
     }
 
-    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths(){
-        return null;
+    public void move(int action)
+    {
+        super.move(action);
+        if (stepCount > 100) {
+            Point p = this.getCurrentLocation();
+            this.resetPosition();
+            logger.info(String.format("Cannot go to final state from: %s after 100 steps, reset to random position:%s", p, this.getCurrentLocation()));
+        }
+    }
+    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths() {
+        ArrayList<ArrayList<StepSnapshot>> expect = new ArrayList<ArrayList<StepSnapshot>>();
+        ArrayList<StepSnapshot> e11 = new ArrayList<StepSnapshot>();
+
+
+        return expect;
+    }
+
+
+    @Override
+    public boolean isTraceConditionMeet() {
+        return (this.finalStateCount % this.mp.resultInterval == 0)
+                || (this.mp.logLowerFinalState && ((this.finalStateCount < 5)
+                || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
+                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
+                ;
+    }
+
+    @Override
+    public List<double[]> getTraceWeight(List<double[]> traceWeights) {
+        List<double[]> ret = new ArrayList<double[]>();
+        //traceWeights.clear();
+//        traceWeights.add(new double[]{0.0d, 1.0d});
+//        traceWeights.add(new double[]{0.56d, 0.44d});
+//        traceWeights.add(new double[]{1.0d, 0.0d});
+        ret.add(traceWeights.get(0));
+        ret.add(traceWeights.get(12));
+        ret.add(traceWeights.get(traceWeights.size()-1));
+        return ret;//traceWeights;
     }
 }
