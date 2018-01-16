@@ -26,12 +26,10 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 10;
-        mp.finalStateUpperBound = 3000;
+        mp.finalStateUpperBound = 6000;
         mp.resultInterval = 50;
         mp.logLowerFinalState = true;
         mp.logFolder = "log/maze1/csv/";
-        mp.rewardFile= "rewards/maze4.json";
-        mp.mazeFile= "data/maze4.txt";
 
 
 
@@ -72,28 +70,47 @@ public class MazeRunner {
         np.obj1 = new int[]{100};
 
 
-        MazeBase maze = new maze4_weighted_sum(mp.mazeFile);
-        ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
-        File file = new File(classLoader.getResource(mp.rewardFile).getFile());
+        MazeBase maze = null;
 
-        JSONParser parser = new JSONParser();
-        Iterator<JSONObject> iterator = null;
         try {
-            Object obj = parser.parse(new FileReader(file));
-
-            JSONObject jsonObject = (JSONObject) obj;
-            System.out.println(jsonObject);
-            System.out.println(jsonObject.get("name"));
-            // loop array
-            JSONArray msg = (JSONArray) jsonObject.get("rewards");
-            iterator = msg.iterator();
-
             //initialize and run
-            maze.initialize(mp, np, parseReward(iterator),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+            mp.mazeFile = "data/maze4.txt";
+            mp.rewardFile = "rewards/maze4.json";
+            maze = new maze4_weighted_sum(mp.mazeFile);
+            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+
+            mp.rewardFile= "rewards/maze5.json";
+            mp.mazeFile= "data/maze5.txt";
+            maze = new maze5_weighted_sum(mp.mazeFile);
+            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+
+            mp.rewardFile= "rewards/maze6.json";
+            mp.mazeFile= "data/maze6.txt";
+            maze = new maze6_weighted_sum(mp.mazeFile);
+            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
         } catch (Exception e) {
             System.out.println(e.toString());
         }
 
+
+    }
+
+    private  static Hashtable<Point, ActionPareto> parseRewardFile(String rewardFile) throws Exception
+    {
+        JSONParser parser = new JSONParser();
+        Iterator<JSONObject> iterator = null;
+        ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
+        File file = new File(classLoader.getResource(rewardFile).getFile());
+
+        Object obj = parser.parse(new FileReader(file));
+
+        JSONObject jsonObject = (JSONObject) obj;
+        System.out.println(jsonObject);
+        System.out.println(jsonObject.get("name"));
+        // loop array
+        JSONArray msg = (JSONArray) jsonObject.get("rewards");
+        iterator = msg.iterator();
+        return parseReward(iterator);
 
     }
 
