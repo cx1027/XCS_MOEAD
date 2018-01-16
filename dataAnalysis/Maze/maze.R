@@ -4,13 +4,13 @@ library(ggplot2)
 
 
 ############ settings ##############
-maze4 <- c('maze4_path_weight100_weight30.csv','Train - 201801141503 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
-maze5 <- c('maze5_path_weight100_weight30.csv','Train - 201801141908 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
-maze6 <- c('maze6_path_weight100_weight30.csv','Train - 201801141908 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
+maze4 <- c('maze4_path_weight100_weight30.csv','Maze4 - 201801141503 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
+maze5 <- c('maze5_path_weight100_weight30.csv','Maze5 - 201801151358 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
+maze6 <- c('maze6_path_weight100_weight30.csv','Maze6 - 201801151104 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
 
 
 upperBound <- 6000
-traceWeightFilter <- c('0.000000|1.000000', '0.480000|0.560000', '1.000000|0.000000') #c('0.000000|1.000000', '0.560000|0.440000', '1.000000|0.000000')
+traceWeightFilter <- c('0.000000|1.000000', '0.480000|0.520000', '0.520000|0.480000', '1.000000|0.000000') #c('0.000000|1.000000', '0.560000|0.440000', '1.000000|0.000000')
 
 ##################
 mazeToRun <- maze5
@@ -37,7 +37,8 @@ data <- raw.data %>%
           , Timestamp <= upperBound)
 
 #max(data$Timestamp)
-
+#unique(raw.data$TraceWeight)
+#unique(data$TraceWeight)
 
 
 uid <- paste(trimws(data$OpenState), trimws(data$FinalState), data$steps, sep = "*")
@@ -104,14 +105,22 @@ for (i in uniqTrail) {
 #    summarise(avgmr = mean(matchRate))
 
 retdata <- result %>%
-  group_by(Timestamp, TargetWeight, TraceWeight, hyperVolumn) %>% distinct
+  group_by(Timestamp, TargetWeight, TraceWeight) %>% distinct
 
 
 getMatchCountForRow_avg <- function(arow, data) {
-    trows <- data %>%
-            filter(Timestamp == arow$Timestamp, TargetWeight == arow$TargetWeight, TraceWeight == arow$TraceWeight)
-    
-    mean(trows$matchRate)
+  trows <- data %>%
+    filter(Timestamp == arow$Timestamp, TargetWeight == arow$TargetWeight, TraceWeight == arow$TraceWeight)
+  
+  mean(trows$matchRate)
+}
+
+
+getMatchCountForRow_avgHV <- function(arow, data) {
+  trows <- data %>%
+    filter(Timestamp == arow$Timestamp, TargetWeight == arow$TargetWeight, TraceWeight == arow$TraceWeight)
+  
+  mean(trows$hyperVolumn)
 }
 
 
@@ -122,13 +131,20 @@ getMatchCountForRow_avg <- function(arow, data) {
 
 avgRate <- rep(0,nrow(retdata))
 for (i in 1:nrow(retdata)) {
-    #print(getMatchCountForRow_avg(retdata[i,], result))
-    avgRate[i] <- getMatchCountForRow_avg(retdata[i,], result)
+  #print(getMatchCountForRow_avg(retdata[i,], result))
+  avgRate[i] <- getMatchCountForRow_avg(retdata[i,], result)
+}
+
+hyperVolumn <- rep(0,nrow(retdata))
+for (i in 1:nrow(retdata)) {
+  #print(getMatchCountForRow_avg(retdata[i,], result))
+  hyperVolumn[i] <- getMatchCountForRow_avgHV(retdata[i,], result)
 }
 
 getMatchCountForRow_avg(retdata[2,], result)
 
 retdata$matchRate <- avgRate
+retdata$hyperVolumn <- hyperVolumn
 
 plt <- ggplot(retdata, aes(x = Timestamp, y = matchRage, group = TraceWeight, color = TraceWeight, linetype = TraceWeight)) +
     geom_line()
@@ -146,7 +162,7 @@ lty = c(1, 2, 3, 4, 5, 6, 8, 9, 1)
 lshp = c(1, 2, 3, 4, 5, 6, 7, 8, 9)
 cbbPalette = c('#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#66ff66', '#a65628', '#f781bf', '#000000')
 
-
+#%>%filter(TraceWeight=='0.480000|0.520000',Timestamp<500,Timestamp>200)
 phv <- ggplot(data = retdata, aes(
   x = Timestamp,
   y = hyperVolumn,

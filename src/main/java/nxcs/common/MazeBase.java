@@ -191,7 +191,7 @@ public abstract class MazeBase implements Environment, ITrace {
                     } // totalTrailCount loop
                     stepStatsLogger.writeLogAndCSVFiles_TESTING(
                             String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
-                                    "Train", this.mp.fileTimestampFormat, 0, this.np.N),
+                                    this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
                             String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
                                     this.np.obj1[obj_num], 0, this.np.N));
                     logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, obj_num, this.np.obj1[obj_num]));
@@ -731,7 +731,6 @@ public abstract class MazeBase implements Environment, ITrace {
         for (double[] traceMoeadWeight : this.getTraceWeight(moeadObj.weights)) {
 
             ArrayList<StepSnapshot> weightStats = new ArrayList<StepSnapshot>();
-            Hashtable<Point, ArrayList<ActionPareto>> paretoCandidates = new Hashtable<>();
             double hyperVolumnSum = 0;
 
             logger.debug(String.format("Test on  weight: %f, %f ", traceMoeadWeight[0], traceMoeadWeight[1]));
@@ -760,11 +759,7 @@ public abstract class MazeBase implements Environment, ITrace {
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
                         //if path>100(step>100) means fail to reach the final state
-                        if(path.size()>100)
-                        {
-                            this.stepCount = 0;
-                            path.clear();
-                        }
+
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn

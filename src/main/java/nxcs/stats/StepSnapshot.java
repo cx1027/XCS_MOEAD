@@ -275,9 +275,9 @@ public class StepSnapshot {
         build.append(",");
         build.append(String.format("%d", this.timestamp));
         build.append(",");
-        build.append(String.format("%f|%f", this.targtWeight[0],   this.targtWeight[1]));
+        build.append(String.format("%f|%f", this.targtWeight[0], this.targtWeight[1]));
         build.append(",");
-        build.append(String.format("%f|%f", this.weight[0],   this.weight[1]));
+        build.append(String.format("%f|%f", this.weight[0], this.weight[1]));
         build.append(",");
         build.append(String.format("%f", this.first_reward));
         build.append(",");
@@ -318,11 +318,17 @@ public class StepSnapshot {
         build.append(String.format("%d", this.steps));
         build.append(",");
         build.append(String.format("%f", this.hyperVolumn));
-		build.append(",");
+        build.append(",");
 
-		if (this.path.size() > 0)
-            build.append(path.stream ().map (p -> String.format("(%d-%d)", (int) p.getX(), (int) p.getY())).collect (Collectors.joining ("->")));
-		build.append("\n");
+        if (this.path.size() > 0) {
+            if(path.size()>100)
+            {
+                //this.steps = 0;
+                path.clear();
+            }
+            build.append((this.path.size() > 30 ? path.stream().limit(30).collect(Collectors.toList()) : path).stream().map(p -> String.format("(%d-%d)", (int) p.getX(), (int) p.getY())).collect(Collectors.joining("->")));
+        }
+        build.append("\n");
 
         return build.toString();
     }

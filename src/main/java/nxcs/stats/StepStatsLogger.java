@@ -47,7 +47,7 @@ public class StepStatsLogger {
 //
 //        SimpleDateFormat dateformatyyyyMMdd = new SimpleDateFormat("yyyyMMddHH");
 //        String date_to_string = dateformatyyyyMMdd.format(new Date());
-        File csv = new File(csvFile.replaceAll("<TRIAL_NUM>", "step_log") + ".csv");
+        File csv = new File(csvFile.replaceAll("<TRIAL_NUM>", "step_log"));
 
         FileWriter dataWriter = null;
         if (!csv.exists()) {
