@@ -4,16 +4,24 @@ library(ggplot2)
 
 
 ############ settings ##############
-maze4 <- c('maze4_path_weight100_weight30.csv','Maze4 - 201801141503 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
-maze5 <- c('maze5_path_weight100_weight30.csv','Maze5 - 201801151358 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
-maze6 <- c('maze6_path_weight100_weight30.csv','Maze6 - 201801151104 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
+maze4 <- c('maze4_path_weight100_weight30.csv','Maze4 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze4 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
+maze5 <- c('maze5_path_weight100_weight30.csv','Maze5- 201801162156 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze5 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
+maze6 <- c('maze6_path_weight100_weight30.csv','Maze6 - 201801161300 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze6 - 201801151104 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
 
 
 upperBound <- 6000
-traceWeightFilter <- c('0.000000|1.000000', '0.480000|0.520000', '0.520000|0.480000', '1.000000|0.000000') #c('0.000000|1.000000', '0.560000|0.440000', '1.000000|0.000000')
+traceWeightFilter <- c('0.040000|0.960000'
+                       , '0.480000|0.520000'
+                       #, '0.520000|0.480000'
+                       , '0.960000|0.040000') #c('0.000000|1.000000', '0.560000|0.440000', '1.000000|0.000000')
+
+plot.labels <- list(expression(paste(lambda[1],'=0.04, 0.96','  ',sep=''))
+                    , expression(paste(lambda[2],'=0.48, 0.52','  ',sep=''))
+                    #, expression(paste(lambda[3],'=0.52, 0.48',sep=''))
+                    , expression(paste(lambda[3],'=0.96, 0.04','  ',sep='')) )
 
 ##################
-mazeToRun <- maze5
+mazeToRun <- maze6
 
 ############# begin to read result #############
 setwd("C:/Users/martin.xie/IdeaProjects/XCS_MOEAD/dataAnalysis/Maze")
@@ -162,13 +170,19 @@ lty = c(1, 2, 3, 4, 5, 6, 8, 9, 1)
 lshp = c(1, 2, 3, 4, 5, 6, 7, 8, 9)
 cbbPalette = c('#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#66ff66', '#a65628', '#f781bf', '#000000')
 
+
+plot.data <- retdata %>% filter(TraceWeight  %in% plot.traceWeightFilter
+                                , Timestamp <= plot.upperBound
+)
+
 #%>%filter(TraceWeight=='0.480000|0.520000',Timestamp<500,Timestamp>200)
-phv <- ggplot(data = retdata, aes(
+phv <- ggplot(data = plot.data, aes(
   x = Timestamp,
   y = hyperVolumn,
   colour = TraceWeight,
   group = TraceWeight,
-  linetype = TraceWeight)) +
+  linetype = TraceWeight
+  )) +
   geom_line() +
   labs(x = 'Number of Leaning Problems\n(a)', y = NULL) +
   ggtitle("THV") +
@@ -184,11 +198,12 @@ theme(legend.position = 'bottom') + theme(panel.grid.major = element_line(size =
   theme(axis.text.x = element_text(size = rel(1.4)),
         axis.text.y = element_text(size = rel(1.4)),
         axis.title = element_text(size = rel(1.2), face = "bold")) +
-  scale_linetype_manual(values = lty) +
-  scale_colour_manual(values = cbbPalette)
+  scale_linetype_manual(values = lty, guide = "none") +
+  scale_colour_manual(values = cbbPalette, labels = plot.labels) +
+  guides(colour=guide_legend(override.aes=list(linetype=1:3)))
 
  
-pmr <- ggplot(data = retdata, aes(
+pmr <- ggplot(data = plot.data, aes(
   x = Timestamp,
   y = matchRate,
   colour = TraceWeight,
@@ -226,6 +241,6 @@ mylegend <- g_legend(phv)
 p3 <- grid.arrange(arrangeGrob(phv + theme(legend.position = "none"),
                                pmr + theme(legend.position = "none"),
                                nrow = 1),
-                   mylegend, nrow = 2, heights = c(5, 1))
+                   mylegend, nrow = 2, heights = c(5, 1) )
 
 p3
