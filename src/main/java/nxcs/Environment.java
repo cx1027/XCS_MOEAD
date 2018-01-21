@@ -28,7 +28,7 @@ public interface Environment {
      * @param action The action to perform
      * @return The reward of performing the given action in the given state
      */
-    public ActionPareto getReward(String state, int action, double first_reward);
+    public ActionPareto getReward(String state, int action);
 
 //	public ActionPareto getReward1(String state, int action, double first_reward, int finalStateCount, maze1_weighted_sum maze, Point weight, NXCS nxcs, NXCSParameters params);
 

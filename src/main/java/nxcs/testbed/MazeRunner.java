@@ -26,12 +26,10 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 10;
-        mp.finalStateUpperBound = 3000;
+        mp.finalStateUpperBound = 3500;
         mp.resultInterval = 50;
         mp.logLowerFinalState = true;
         mp.logFolder = "log/maze1/csv/";
-
-
 
 
         np.N = 6000;
@@ -76,9 +74,9 @@ public class MazeRunner {
         try {
             //initialize and run
             mp.mazeFile = "data/maze4.txt";
-            mp.rewardFile = "rewards/maze4.json";
+            mp.rewardFile = "rewards/maze4loop.json";
             maze = new maze4_weighted_sum(mp.mazeFile);
-            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+            maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
 
 //            mp.rewardFile= "rewards/maze5.json";
 //            mp.mazeFile= "data/maze5.txt";
@@ -96,38 +94,42 @@ public class MazeRunner {
 
     }
 
-    private  static Hashtable<Point, ActionPareto> parseRewardFile(String rewardFile) throws Exception
-    {
+    private static ArrayList<Hashtable<Point, ActionPareto>> parseRewardFile(String rewardFile) throws Exception {
+        ArrayList<Hashtable<Point, ActionPareto>> ret = new ArrayList<>();
         JSONParser parser = new JSONParser();
-        Iterator<JSONObject> iterator = null;
         ClassLoader classLoader = new MazeRunner().getClass().getClassLoader();
         File file = new File(classLoader.getResource(rewardFile).getFile());
 
         Object obj = parser.parse(new FileReader(file));
 
-        JSONObject jsonObject = (JSONObject) obj;
-        System.out.println(jsonObject);
-        System.out.println(jsonObject.get("name"));
+        JSONArray rewardArray = (JSONArray) obj;
+        System.out.println(rewardArray);
+        //System.out.println(jsonObject.get("name"));
         // loop array
-        JSONArray msg = (JSONArray) jsonObject.get("rewards");
-        iterator = msg.iterator();
-        return parseReward(iterator);
+        Iterator<JSONObject> iterator = null;
+        Iterator<JSONObject> riterator = rewardArray.iterator();
+        while (riterator.hasNext()) {
+            JSONObject t = riterator.next();
+            JSONArray msg = (JSONArray) t.get("rewards");
+            iterator = msg.iterator();
+            ret.add(parseReward(iterator));
+        }
 
+        return ret;
     }
 
 
-    private static Hashtable<Point, ActionPareto> parseReward(Iterator<JSONObject> rewards)
-    {
+    private static Hashtable<Point, ActionPareto> parseReward(Iterator<JSONObject> rewards) {
         Hashtable<Point, ActionPareto> ret = new Hashtable<Point, ActionPareto>();
         while (rewards.hasNext()) {
             JSONObject t = rewards.next();
 
-            String[] loc =((String) t.get("location")).split("\\|");
-            String[] reward =((String) t.get("reward")).split("\\|");
+            String[] loc = ((String) t.get("location")).split("\\|");
+            String[] reward = ((String) t.get("reward")).split("\\|");
 
             Point p = new Point(Integer.parseInt(loc[0]), Integer.parseInt(loc[1]));
             ActionPareto qreward = new ActionPareto(new Qvector(Double.parseDouble(reward[0]), Double.parseDouble(reward[1])), 0);
-            ret.put(p,qreward);
+            ret.put(p, qreward);
         }
 
         return ret;

@@ -61,7 +61,8 @@ public abstract class MazeBase implements Environment, ITrace {
      */
     protected int stepCount;
 
-    public Hashtable<Point, ActionPareto> positionRewards;
+    public List<Hashtable<Point, ActionPareto>> positionRewards;
+    protected Hashtable<Point, ActionPareto> currentPositionReward;
 
     protected final static Logger logger = Logger.getLogger(MazeBase.class);
 
@@ -105,11 +106,10 @@ public abstract class MazeBase implements Environment, ITrace {
                 double[] targetWeight = new double[]{pweight.getX(), pweight.getY()};
 
                 //Loop:diff final reward for obj1
-                for (int obj_num = 0; obj_num < this.np.obj1.length; obj_num++) {
+                for (Hashtable<Point, ActionPareto> reward: this.positionRewards) {
 
                     //set reward for each round
-                    double first_Freward = this.np.obj1[obj_num];
-                    double second_Freward = 1000 - this.np.obj1[obj_num];
+                    this.currentPositionReward = reward;
 
                     //how many times a same setting run, then to avg for the result
                     //totalCalcTimes:how many runs want to avg, here set 1 to ignor this loop
@@ -132,7 +132,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
 
                         logger.info(String.format("######### begin to run of: Weight:%s - first reward:%s - Trail#: %s ",
-                                targetWeight, this.np.obj1[obj_num], trailIndex));
+                                targetWeight, this.np.obj1[0], trailIndex));
 
 
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
@@ -140,7 +140,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                            logger.info("final State Count:" + finalStateCount);
                             logger.debug(String.format("Trail:%d, finalStateCount:%d, Current Location:%s", trailIndex, finalStateCount, this.getCurrentLocation()));
 
-                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, this.np.obj1[obj_num], moeadObj.getWeights());
+                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, this.np.obj1[0], moeadObj.getWeights());
 
 
 //                            if (finalStateCount > 2497) {
@@ -165,7 +165,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
 
 
-                                this.trace(moeadObj, nxcs, stepStatsLogger, first_Freward, trailIndex, targetWeight, first_Freward, finalStateCount);
+                                this.trace(moeadObj, nxcs, stepStatsLogger, trailIndex, targetWeight, this.np.obj1[0], finalStateCount);
                                 this.resetPosition();
 
                                 logged = true;
@@ -193,8 +193,8 @@ public abstract class MazeBase implements Environment, ITrace {
                             String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
                                     this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
                             String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
-                                    this.np.obj1[obj_num], 0, this.np.N));
-                    logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, obj_num, this.np.obj1[obj_num]));
+                                    this.np.obj1[0], 0, this.np.N));
+                    logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, 0, this.np.obj1[0]));
                 } // action selection loop
 
             }
@@ -288,7 +288,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return new Point(x, y);
     }
 
-    public abstract ActionPareto getReward(String state, int action, double first_reward);
+    public abstract ActionPareto getReward(String state, int action);
 
     public boolean isEndOfProblem(String state) {
         for (Point finalState : finalStates) {
@@ -546,25 +546,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return expect;
     }
 
-
-    private HashMap<Integer, Point> getTestLocation() {
-        HashMap<Integer, Point> ret = new HashMap<Integer, Point>();
-        ret.put(0, new Point(2, 1));
-        ret.put(1, new Point(3, 1));
-        ret.put(2, new Point(4, 1));
-        ret.put(3, new Point(5, 1));
-        return ret;
-    }
-
-    private Point getTestLocation(Integer test, HashMap<Integer, Point> locations) {
-        if (locations.containsKey(test))
-            return locations.get(test);
-        else
-            return null;
-    }
-
-
-    public MazeBase initialize(MazeParameters mp, NXCSParameters np, Hashtable<Point, ActionPareto> positionRewards, HyperVolumn hyperVolumnCalculator, IParetoCalculator paretoCalculator) throws IOException {
+    public MazeBase initialize(MazeParameters mp, NXCSParameters np, ArrayList<Hashtable<Point, ActionPareto>> positionRewards, HyperVolumn hyperVolumnCalculator, IParetoCalculator paretoCalculator) throws IOException {
         logger.info("\n\n=========================   " + this.getClass().getName() + "   ========================================");
 
         this.mp = mp;
@@ -667,10 +649,6 @@ public abstract class MazeBase implements Environment, ITrace {
         return this.openLocations;
     }
 
-    public void setPositionRewards(Hashtable<Point, ActionPareto> pr) {
-        this.positionRewards = pr;
-    }
-
     /***
      * move to next valid location
      * @param action
@@ -725,7 +703,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return dup;
     }
 
-    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, double first_Freward, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
+    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
         ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
 
         for (double[] traceMoeadWeight : this.getTraceWeight(moeadObj.weights)) {

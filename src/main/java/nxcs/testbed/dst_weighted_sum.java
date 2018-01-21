@@ -3,18 +3,12 @@ package nxcs.testbed;
 
 import nxcs.*;
 import nxcs.common.MazeBase;
-import nxcs.moead.MOEAD;
-import nxcs.stats.Snapshot;
 import nxcs.stats.StepSnapshot;
-import nxcs.stats.StepStatsLogger;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 //import nxcs.Trace;
 
@@ -46,7 +40,7 @@ public class dst_weighted_sum extends MazeBase {
      */
     @Override
     /* return reward and action */
-    public ActionPareto getReward(String state, int action, double first_reward) {
+    public ActionPareto getReward(String state, int action) {
         stepCount++;
         ActionPareto reward = new ActionPareto(new Qvector(-1, 0), 1);
 
@@ -60,7 +54,7 @@ public class dst_weighted_sum extends MazeBase {
                 reward.setPareto(new Qvector(-1, 0));//
             }
             if (this.isEndOfProblem(this.getState()))
-                reward = this.positionRewards.get(new Point(this.x, this.y));
+                reward = this.currentPositionReward.get(new Point(this.x, this.y));
         } catch (Exception e) {
             logger.info(String.format("#####Fatal error: %s  %d", state, action));
             throw e;
