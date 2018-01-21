@@ -662,10 +662,10 @@ public class NXCS {
             double[] PA1 = generatePredictions(setM, 1);
 
             double Qplus1 = 1 + params.gamma * PA0[max];
-            if (Qplus1 < 5) {
+            if (Qplus1 < params.initialPrediction) {
                 P[0] = Qplus1;
             } else {
-                P[0] = 5;
+                P[0] = params.initialPrediction;
             }
 
             P[1] = reward.getPareto().get(1) + params.gamma * PA1[max];

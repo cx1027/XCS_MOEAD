@@ -335,7 +335,7 @@ public abstract class MazeBase implements Environment, ITrace {
             for (int i = 0; i < PA.length; i++) {
                 logger.debug("PAt[" + i + "]:" + PA[i]);
             }
-
+            //left to f1, right to f2
             //Q_finalreward
 //            double Q_finalreward_left = PA1[1];
 //            double Q_finalreward_right = PA1[2];
@@ -738,10 +738,19 @@ public abstract class MazeBase implements Environment, ITrace {
 
             int resetPoint = 0;
 
-            for (Point openState: this.openLocations) {
+            for (Point openState : this.openLocations) {
                 this.resetToSamePosition(openState);
                 List<Point> path = new ArrayList<>();
                 path.add(openState);
+                double[] PA1 = new double[]{0, 0, 0, 0};
+                double[] PA2 = new double[]{0, 0, 0, 0};
+                double[] PA = new double[]{0, 0, 0, 0};
+                if (this.finalStateCount >= 2500) {
+                    List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(openState.x, openState.y));
+                    PA1 = nxcs.generatePredictions(C, 0);
+                    PA2 = nxcs.generatePredictions(C, 1);
+                    PA = nxcs.generateTotalPredictions_Norm(C, traceMoeadWeight);
+                }
 
                 while (!this.isEndOfProblem(this.getState())) {
                     String state = this.getState();
@@ -761,12 +770,13 @@ public abstract class MazeBase implements Environment, ITrace {
                         //if path>100(step>100) means fail to reach the final state
 
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
-                                , objective, traceMoeadWeight, this.stepCount, 0, path);
+                                , objective, traceMoeadWeight, this.stepCount, 0, path
+                                , PA1, PA2, PA);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                         weightStats.add(row);
                         logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
                         //logger.info(String.format("##Collectd row:\t%s", row.to_Total_CSV_PA()));
-                     }
+                    }
                 }
             }
             final double hypersum = hyperVolumnSum;

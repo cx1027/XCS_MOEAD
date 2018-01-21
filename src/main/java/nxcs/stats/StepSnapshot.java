@@ -38,6 +38,9 @@ public class StepSnapshot {
     private double Q_steps_select;
     private double Q_total_select;
     private List<Point> path;
+    private double[] PA1;
+    private double[] PA2;
+    private double[] PAtotal;
 
     public int getTimestamp() {
         return timestamp;
@@ -132,7 +135,8 @@ public class StepSnapshot {
      * @param hyperVolumn
      */
     public StepSnapshot(int trailNumber, int timestamp, Point openState, Point finalState, double[] targetWeight
-            , double objective, double[] weight, int steps, double hyperVolumn, List<Point> path) {
+            , double objective, double[] weight, int steps, double hyperVolumn, List<Point> path
+            , double[] PA1, double[] PA2, double[] PAtotal) {
         this.trailNumber = trailNumber;
         this.timestamp = timestamp;
         this.openState = openState;
@@ -143,6 +147,9 @@ public class StepSnapshot {
         this.steps = steps;
         this.hyperVolumn = hyperVolumn;
         this.path = path;
+        this.PA1 = PA1;
+        this.PA2 = PA2;
+        this.PAtotal = PAtotal;
     }
 
     public StepSnapshot(Point openState, Point finalState, int steps, ArrayList<Point> path) {
@@ -321,13 +328,28 @@ public class StepSnapshot {
         build.append(",");
 
         if (this.path.size() > 0) {
-            if(path.size()>100)
+            if (path.size() > 100)
             {
                 //this.steps = 0;
                 path.clear();
             }
             build.append((this.path.size() > 30 ? path.stream().limit(30).collect(Collectors.toList()) : path).stream().map(p -> String.format("(%d-%d)", (int) p.getX(), (int) p.getY())).collect(Collectors.joining("->")));
         }
+        build.append(",");
+        for (double d : this.PA1) {
+            build.append(String.format("%f", d));
+            build.append(",");
+        }
+        for (double d : this.PA2) {
+            build.append(String.format("%f", d));
+            build.append(",");
+        }
+        for (double d : this.PAtotal) {
+            build.append(String.format("%f", d));
+            build.append(",");
+        }
+
+        //append end of line
         build.append("\n");
 
         return build.toString();

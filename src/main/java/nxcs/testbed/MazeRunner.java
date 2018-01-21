@@ -26,7 +26,7 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 10;
-        mp.finalStateUpperBound = 6000;
+        mp.finalStateUpperBound = 3000;
         mp.resultInterval = 50;
         mp.logLowerFinalState = true;
         mp.logFolder = "log/maze1/csv/";
@@ -50,6 +50,7 @@ public class MazeRunner {
         np.thetaDel = 200;
         np.doActionSetSubsumption = false;
         np.doGASubsumption = false;
+        np.initialPrediction = 10;
 
         //initialize weights
         np.weights = new ArrayList<Point>();
@@ -79,15 +80,15 @@ public class MazeRunner {
             maze = new maze4_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
 
-            mp.rewardFile= "rewards/maze5.json";
-            mp.mazeFile= "data/maze5.txt";
-            maze = new maze5_weighted_sum(mp.mazeFile);
-            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
-
-            mp.rewardFile= "rewards/maze6.json";
-            mp.mazeFile= "data/maze6.txt";
-            maze = new maze6_weighted_sum(mp.mazeFile);
-            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+//            mp.rewardFile= "rewards/maze5.json";
+//            mp.mazeFile= "data/maze5.txt";
+//            maze = new maze5_weighted_sum(mp.mazeFile);
+//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
+//
+//            mp.rewardFile= "rewards/maze6.json";
+//            mp.mazeFile= "data/maze6.txt";
+//            maze = new maze6_weighted_sum(mp.mazeFile);
+//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
         } catch (Exception e) {
             System.out.println(e.toString());
         }

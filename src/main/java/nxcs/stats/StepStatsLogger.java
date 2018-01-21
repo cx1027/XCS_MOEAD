@@ -57,7 +57,9 @@ public class StepStatsLogger {
             dataWriter.write("TrailNumber,Timestamp,TargetWeight,TraceWeight,obj_r1,OpenState,FinalState" +
                     ",Q_finalreward_left,Q_finalreward_right,Q_finalreward_delta,Q_finalreward_max" +
                     ",Q_steps_left,Q_steps_right,Q_steps_delta,Q_steps_min" +
-                    ",Q_total_left, Q_total_right,Q_finalreward_select,Q_steps_select,Q_total_select,steps,hyperVolumn,path" + "\n");
+                    ",Q_total_left, Q_total_right,Q_finalreward_select,Q_steps_select,Q_total_select,steps,hyperVolumn,path" +
+                    ",PA1[0],PA1[1],PA1[2],PA1[3],PA2[0],PA2[1],PA2[2],PA2[3],PAtotal[0],PAtotal[1],PAtotal[2],PAtotal[3]" +
+                    "\n");
         } else {
             dataWriter = new FileWriter(csv, true);
         }
