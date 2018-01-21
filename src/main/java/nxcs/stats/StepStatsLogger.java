@@ -66,6 +66,7 @@ public class StepStatsLogger {
         for (StepSnapshot s : this.stepSnapshots) {
             dataWriter.append(s.to_Total_CSV_PA());
         }
+        this.stepSnapshots.clear();
         dataWriter.close();
     }
 }

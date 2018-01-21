@@ -90,6 +90,17 @@ public abstract class MazeBase implements Environment, ITrace {
         this.mazeFile = f;
     }
 
+    private  double[] getRewardWeight()
+    {
+        double [] retRewardWeight = new double[this.currentPositionReward.size()];
+        int idx=0;
+        for (Point p :this.currentPositionReward.keySet())
+        {
+            retRewardWeight[idx] = this.currentPositionReward.get(p).getPareto().get(1);
+        }
+        return retRewardWeight;
+    }
+
     public void run() throws Exception {
 
         try {
@@ -103,13 +114,13 @@ public abstract class MazeBase implements Environment, ITrace {
             StepStatsLogger stepStatsLogger = new StepStatsLogger(chartXInterval, 0);
             //Loop weights
             for (Point pweight : this.np.weights) {
-                double[] targetWeight = new double[]{pweight.getX(), pweight.getY()};
 
                 //Loop:diff final reward for obj1
                 for (Hashtable<Point, ActionPareto> reward: this.positionRewards) {
 
                     //set reward for each round
                     this.currentPositionReward = reward;
+                    double[] targetWeight = this.getRewardWeight();
 
                     //how many times a same setting run, then to avg for the result
                     //totalCalcTimes:how many runs want to avg, here set 1 to ignor this loop
@@ -169,7 +180,11 @@ public abstract class MazeBase implements Environment, ITrace {
                                 this.resetPosition();
 
                                 logged = true;
-
+                                stepStatsLogger.writeLogAndCSVFiles_TESTING(
+                                        String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
+                                                this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
+                                        String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
+                                                this.np.obj1[0], 0, this.np.N));
                             }//for log
                         } // endof z loop
 
@@ -189,11 +204,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
                     } // totalTrailCount loop
-                    stepStatsLogger.writeLogAndCSVFiles_TESTING(
-                            String.format("log/%s/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv", "MOXCS",
-                                    this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
-                            String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
-                                    this.np.obj1[0], 0, this.np.N));
+
                     logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, 0, this.np.obj1[0]));
                 } // action selection loop
 
