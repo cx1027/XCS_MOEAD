@@ -171,7 +171,7 @@ public class NXCS {
         }
 
 		/* get immediate reward */
-        reward = env.getReward(previousState, action, firstreward);
+        reward = env.getReward(previousState, action);
         if (reward.getAction() == 5) { /*
                                          * ???which means cant find F in 100,
 										 * then reset in getReward()
