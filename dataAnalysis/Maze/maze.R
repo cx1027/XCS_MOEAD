@@ -34,32 +34,38 @@ traceWeightFilter <- c('0.000000|1.000000' ,
                        '1.000000|0.000000'
                        )
 
-plot.upperBound <- 3000
-plot.traceWeightFilter <- c('0.000000|1.000000' ,
-                       '0.111111|0.888889' ,
+plot.upperBound <- 6000
+plot.traceWeightFilter <- c(#'0.000000|1.000000' ,
+                       #'0.111111|0.888889' ,
                        '0.222222|0.777778' ,
-                       '0.333333|0.666667' ,
+                       #'0.333333|0.666667' ,
                        '0.444444|0.555556' ,
                        '0.555556|0.444444' ,
-                       '0.666667|0.333333' ,
-                       '0.777778|0.222222' ,
-                       '0.888889|0.111111' ,
-                       '1.000000|0.000000')
+                       #'0.666667|0.333333' ,
+                       '0.777778|0.222222' 
+                       #'0.888889|0.111111' ,
+                       #'1.000000|0.000000'
+                       )
 
-plot.labels <- list(expression(paste(lambda[0],'=0.0, 1.0','  ',sep=''))
-                    , expression(paste(lambda[1],'=0.11, 0.89','  ',sep=''))
-                    , expression(paste(lambda[2],'=0.22, 0.78','  ',sep=''))
-                    , expression(paste(lambda[3],'=0.33, 0.67','  ',sep=''))
-                     , expression(paste(lambda[4],'=0.44, 0.56','  ',sep=''))
+plot.labels <- list(#expression(paste(lambda[0],'=0.0, 1.0','  ',sep=''))
+                    #, expression(paste(lambda[1],'=0.11, 0.89','  ',sep=''))
+                     expression(paste(lambda[2],'=0.22, 0.78','  ',sep=''))
+                    #, expression(paste(lambda[3],'=0.33, 0.67','  ',sep=''))
+                    , expression(paste(lambda[4],'=0.44, 0.56','  ',sep=''))
                     , expression(paste(lambda[5],'=0.56, 0.44','  ',sep=''))
-                    , expression(paste(lambda[6],'=0.67, 0.33','  ',sep=''))
+                    #, expression(paste(lambda[6],'=0.67, 0.33','  ',sep=''))
                     , expression(paste(lambda[7],'=0.78, 0.22','  ',sep=''))
-                    , expression(paste(lambda[8],'=0.89, 0.11','  ',sep=''))
-                    , expression(paste(lambda[9],'=1.0, 0.0','  ',sep='')) )
+                    #, expression(paste(lambda[8],'=0.89, 0.11','  ',sep=''))
+                    #, expression(paste(lambda[9],'=1.0, 0.0','  ',sep='')) 
+                    )
 
 
 ##################
 mazeToRun <- maze4
+
+
+
+
 
 ############# begin to read result #############
 setwd("C:/Users/martin.xie/IdeaProjects/XCS_MOEAD/dataAnalysis/Maze")
@@ -84,31 +90,25 @@ names(raw.data) <- ax[-1]
 
 data <- raw.data %>% 
     select(TrailNumber, Timestamp, TargetWeight, TraceWeight, obj_r1, OpenState, FinalState, steps, hyperVolumn, path) %>%
-      #filter(TraceWeight == ' 0.000000|1.000000')
-    #%>% filter(TrailNumber == 0)
     filter(TraceWeight %in% traceWeightFilter
           , Timestamp <= upperBound)
 
-#max(data$Timestamp)
-#unique(raw.data$TraceWeight)
-#unique(data$TraceWeight)
+## release memory
+rm(raw.data)
 
-
+################ check if uid in final state pair ###############
 uid <- paste(data$OpenState, data$FinalState, data$steps, sep = "*")
 data <- cbind(data, uid)
 data$match <- ifelse(data$uid %in% targetSteps$targetId, 1, 0)
 rm(uid)
 
+################ calculate match rate ###############
 result <- data %>%
             group_by(TrailNumber, Timestamp,TargetWeight,TraceWeight ) %>%
             summarise(groupRow = n()
                     , matchCount = sum(match)
                     , matchRate =matchCount/groupRow 
                     , hyperVolumn = mean(hyperVolumn))
-
- 
-
-##result[1,]$matchRate <- getMatchCountForRow(result[1,], data)
 
 uniqTrail <- unique(result$TrailNumber)
 pall <- rep(NULL, nrow(uniqTrail))
@@ -130,21 +130,12 @@ for (i in uniqTrail) {
 
 
 
-#retdata <- result %>%
-#    group_by(Timestamp, TargetWeight, TraceWeight, hyperVolumn) %>%
-#    summarise(avgmr = mean(matchRate))
-
+################ calculate mean match rate and hyper volume ###############
 retdata <- result %>%
   group_by(Timestamp, TargetWeight, TraceWeight) %>%
-  summarise(
-        matchRate = mean(matchRate) 
+  summarise(matchRate = mean(matchRate) 
           , hyperVolumn = mean(hyperVolumn))
 
-
-
-#arow <- retdata[100,]
-#trows <- result %>%
-#            filter(Timestamp == arow$Timestamp, TargetWeight == arow$TargetWeight, TraceWeight == arow$TraceWeight)
 
 plt <- ggplot(retdata, aes(x = Timestamp, y = matchRate, group = TraceWeight, color = TraceWeight, linetype = TraceWeight)) +
     geom_line()
@@ -163,12 +154,13 @@ cbbPalette = c('#e41a1c', '#377eb8', '#4daf4a'
                ,'#f781bf')
 
 
+################ plot data ###############
 plot.data <- retdata %>% filter(TraceWeight  %in% plot.traceWeightFilter
                                 , Timestamp <= plot.upperBound
                                 , TargetWeight %in% c('65.000000|65.000000')
             )
 
-#%>%filter(TraceWeight=='0.480000|0.520000',Timestamp<500,Timestamp>200)
+################ plot hyper volume ###############
 phv <- ggplot(data = plot.data, aes(
   x = Timestamp,
   y = hyperVolumn,
@@ -195,9 +187,10 @@ theme(legend.position = 'bottom') + theme(panel.grid.major = element_line(size =
         axis.title = element_text(size = rel(1.2), face = "bold")) +
   scale_linetype_manual(values = lty, guide = "none") +
   scale_colour_manual(values = cbbPalette, labels = plot.labels) +
-  guides(colour=guide_legend(override.aes=list(linetype=1:10)))
+  guides(colour=guide_legend(override.aes=list(linetype=1:length(plot.traceWeightFilter))))
 
- 
+
+################ plot match rate ###############
 pmr <- ggplot(data = plot.data, aes(
   x = Timestamp,
   y = matchRate,
@@ -205,7 +198,7 @@ pmr <- ggplot(data = plot.data, aes(
   group = TraceWeight,
   linetype = TraceWeight)) +
   geom_line() +
-  labs(x = 'Number of Leaning Problems\n(a)', y = NULL) +
+  labs(x = 'Number of Leaning Problems\n(b)', y = NULL) +
   ggtitle("% OP") +
   theme(axis.title.y = element_text(size = rel(1.1), face = "bold"), axis.title.x = element_text(size = rel(1.1), face = "bold"), title = element_text(size = rel(1.1), face = 'bold')) +
   theme(legend.text = element_text(size = rel(1), face = "bold")) +
@@ -224,6 +217,8 @@ theme(legend.position = 'bottom') + theme(panel.grid.major = element_line(size =
   scale_linetype_manual(values = lty) +
   scale_colour_manual(values = cbbPalette)
 
+
+################ plot arrange plots into one ###############
 library(gridExtra)
 
 g_legend <- function(a.gplot) {
