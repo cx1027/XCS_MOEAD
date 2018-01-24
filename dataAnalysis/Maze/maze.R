@@ -6,8 +6,8 @@ library(ggplot2)
 ############ settings ##############
 #maze4 <- c('maze4_path_weight100_weight30.csv','Maze4 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze4 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
 maze4 <- c('maze4_path_weight100_weight30.csv','nxcs.testbed.maze4_weighted_sum - 201801222157 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
-maze5 <- c('maze5_path_weight100_weight30.csv','Maze5- 201801162156 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze5 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
-maze6 <- c('maze6_path_weight100_weight30.csv','Maze6 - 201801161300 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze6 - 201801151104 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
+maze5 <- c('maze5_path_weight100_weight30.csv','maze5 - 201801222158 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze5 - 201801162151 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv')
+maze6 <- c('maze6_path_weight100_weight30.csv','maze6 - 201801222201 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv') #Maze6 - 201801151104 - Trial 0 - TRIAL_NUM - 6000 - TEST.csv.csv')
 
 
 upperBound <- 6000
@@ -61,7 +61,7 @@ plot.labels <- list(#expression(paste(lambda[0],'=0.0, 1.0','  ',sep=''))
 
 
 ##################
-mazeToRun <- maze4
+mazeToRun <- maze6
 
 
 
@@ -157,7 +157,7 @@ cbbPalette = c('#e41a1c', '#377eb8', '#4daf4a'
 ################ plot data ###############
 plot.data <- retdata %>% filter(TraceWeight  %in% plot.traceWeightFilter
                                 , Timestamp <= plot.upperBound
-                                , TargetWeight %in% c('65.000000|65.000000')
+                                , TargetWeight %in% c('30.000000|100.000000')
             )
 
 ################ plot hyper volume ###############
