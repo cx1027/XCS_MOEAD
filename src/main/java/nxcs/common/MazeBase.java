@@ -90,13 +90,12 @@ public abstract class MazeBase implements Environment, ITrace {
         this.mazeFile = f;
     }
 
-    private  double[] getRewardWeight()
-    {
-        double [] retRewardWeight = new double[this.currentPositionReward.size()];
-        int idx=0;
-        for (Point p :this.currentPositionReward.keySet())
-        {
+    private double[] getRewardWeight() {
+        double[] retRewardWeight = new double[this.currentPositionReward.size()];
+        int idx = 0;
+        for (Point p : this.currentPositionReward.keySet()) {
             retRewardWeight[idx] = this.currentPositionReward.get(p).getPareto().get(1);
+            idx++;
         }
         return retRewardWeight;
     }
@@ -116,7 +115,7 @@ public abstract class MazeBase implements Environment, ITrace {
             for (Point pweight : this.np.weights) {
 
                 //Loop:diff final reward for obj1
-                for (Hashtable<Point, ActionPareto> reward: this.positionRewards) {
+                for (Hashtable<Point, ActionPareto> reward : this.positionRewards) {
 
                     //set reward for each round
                     this.currentPositionReward = reward;
@@ -129,7 +128,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
-                        moeadObj.popsize = 25;
+                        moeadObj.popsize = 10;
                         moeadObj.neighboursize = 3;
                         moeadObj.TotalItrNum = 250;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
@@ -187,6 +186,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                                 this.np.obj1[0], 0, this.np.N));
                             }//for log
                         } // endof z loop
+                        this.printOpenLocationClassifiers(this.finalStateCount,nxcs,moeadObj.weights, targetWeight[0]);
 
                         //write result to csv
 //                        stepLogger.writeLogAndCSVFiles(
@@ -325,26 +325,27 @@ public abstract class MazeBase implements Environment, ITrace {
         return locStats;
     }
 
-    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, double[] weight, double obj_r1) {
+    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, List<double[]> weightList, double obj_r1) {
         logger.debug("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
 
         for (Point p : this.openLocations) {
             logger.debug(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
-
-
-            List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(p.x, p.y));
-
-            double[] PA1 = nxcs.generatePredictions(C, 0);
-            for (int i = 0; i < PA1.length; i++) {
-                logger.debug("PA1[" + i + "]:" + PA1[i]);
-            }
-            double[] PA2 = nxcs.generatePredictions(C, 1);
-            for (int i = 0; i < PA2.length; i++) {
-                logger.debug("PA2[" + i + "]:" + PA2[i]);
-            }
-            double[] PA = nxcs.generateTotalPredictions_Norm(C, weight);
-            for (int i = 0; i < PA.length; i++) {
-                logger.debug("PAt[" + i + "]:" + PA[i]);
+            List<Classifier> C = nxcs.generateMatchSet(getStringForState((int) p.getX(), (int) p.getY()));
+            for (double[] weight : weightList) {
+                logger.debug("weight0:" + weight[0] + " weight1:" + weight[1]);
+                List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
+                double[] PA1 = nxcs.generatePredictions(A, 0);
+                for (int i = 0; i < PA1.length; i++) {
+                    logger.debug("PA1[" + i + "]:" + PA1[i]);
+                }
+                double[] PA2 = nxcs.generatePredictions(A, 1);
+                for (int i = 0; i < PA2.length; i++) {
+                    logger.debug("PA2[" + i + "]:" + PA2[i]);
+                }
+                double[] PA = nxcs.generateTotalPredictions_Norm(A, weight);
+                for (int i = 0; i < PA.length; i++) {
+                    logger.debug("PAt[" + i + "]:" + PA[i]);
+                }
             }
             //left to f1, right to f2
             //Q_finalreward
@@ -375,7 +376,8 @@ public abstract class MazeBase implements Environment, ITrace {
 
             for (int action : act) {
 
-                List<Classifier> A = C.stream().filter(b -> b.action == action && b.weight_moead[1] == 0).collect(Collectors.toList());
+//                List<Classifier> A = C.stream().filter(b -> b.action == action && b.weight_moead[1] == 0).collect(Collectors.toList());
+                List<Classifier> A = C.stream().filter(b -> b.action == action).collect(Collectors.toList());
                 Collections.sort(A, new Comparator<Classifier>() {
                     @Override
                     public int compare(Classifier o1, Classifier o2) {
@@ -751,6 +753,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     //double selectedPA_reward = nxcs.getSelectPA(action, state);
                     //ActionPareto r = this.getReward(state, action, first_Freward);
+
                     this.move(action);
                     path.add(this.getCurrentLocation());
 
@@ -776,6 +779,8 @@ public abstract class MazeBase implements Environment, ITrace {
             logger.info(String.format("End of trail:%d, %d/%d,  weight: %f, %f", trailIndex, finalStateCount, this.mp.finalStateUpperBound, traceMoeadWeight[0], traceMoeadWeight[1]));
         }//loop test weight
 
+        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, this.getTraceWeight(moeadObj.weights), 0);
+
         return testStats;
     }
 
@@ -788,7 +793,13 @@ public abstract class MazeBase implements Environment, ITrace {
                 if (Cweight.size() > 1) {
                     logger.info("more then one classifier in this weight + action");
                     //TODO: sort by fitness and retain the one with highest fitness
-                    throw new Exception("more then one classifier in this weight + action");
+                    Collections.sort(Cweight, new Comparator<Classifier>() {
+                        @Override
+                        public int compare(Classifier o1, Classifier o2) {
+                            return o1.fitness == o2.fitness ? 0 : (o1.fitness > o2.fitness ? 1 : -1);
+                        }
+                    });
+//                    throw new Exception("more then one classifier in this weight + action");
                 }
                 ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
             }

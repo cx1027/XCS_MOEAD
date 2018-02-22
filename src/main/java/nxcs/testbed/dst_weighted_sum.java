@@ -43,24 +43,38 @@ public class dst_weighted_sum extends MazeBase {
     public ActionPareto getReward(String state, int action) {
         stepCount++;
         ActionPareto reward = new ActionPareto(new Qvector(-1, 0), 1);
-
         try {
             this.move(action);
-            logger.debug("Current Location:" + this.getCurrentLocation());
-            if (stepCount > 100) {
-//                logger.info("stepCount>100:");
-//                printOpenLocationClassifiers(0, this, null, null, first_reward);
-                resetPosition();
-                reward.setPareto(new Qvector(-1, 0));//
-            }
+
             if (this.isEndOfProblem(this.getState()))
                 reward = this.currentPositionReward.get(new Point(this.x, this.y));
         } catch (Exception e) {
-            logger.info(String.format("#####Fatal error: %s  %d", state, action));
+            logger.info(String.format("%s  %d", state, action));
             throw e;
         }
 
         return reward;
+    }
+
+    public void move(int action)
+    {
+        super.move(action);
+
+        if (stepCount > 100) {
+            Point p = this.getCurrentLocation();
+            this.resetPosition();
+            logger.info(String.format("Cannot go to final state from: %s after 100 steps, reset to random position:%s", p, this.getCurrentLocation()));
+
+        }
+    }
+
+    @Override
+    public boolean isTraceConditionMeet() {
+        return (this.finalStateCount % this.mp.resultInterval == 0)
+                || (this.mp.logLowerFinalState && (
+                (this.finalStateCount < 200 && this.finalStateCount % 50 == 0)
+                        || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
+                ;
     }
 
     public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths(){

@@ -107,6 +107,7 @@ public class Classifier implements Serializable {
 		prediction[1] = params.initialPrediction;
 		error[1] = params.initialError;
 		fitnessArray[1] = params.initialFitness;
+		fitness = params.initialFitness;
 		omega = params.initialOmega;
 		experience = 0;
 		timestamp = 0;
@@ -147,6 +148,7 @@ public class Classifier implements Serializable {
 		prediction[1] = params.initialPrediction;
 		error[1] = params.initialError;
 		fitnessArray[1] = params.initialFitness;
+		fitness = params.initialFitness;
 		omega = params.initialOmega;
 		experience = 0;
 		timestamp = 0;

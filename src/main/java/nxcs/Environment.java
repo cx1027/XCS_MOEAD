@@ -6,6 +6,7 @@ import nxcs.testbed.maze4_weighted_sum;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An interface that represents an Environment that an NXCS instance
@@ -33,7 +34,7 @@ public interface Environment {
 //	public ActionPareto getReward1(String state, int action, double first_reward, int finalStateCount, maze1_weighted_sum maze, Point weight, NXCS nxcs, NXCSParameters params);
 
 
-    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, double[] weight, double obj_r1);
+    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, List<double[]> weightList, double obj_r1);
 
 
     /**
