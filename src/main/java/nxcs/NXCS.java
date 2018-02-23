@@ -187,7 +187,7 @@ public class NXCS {
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
                 List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-                runGA(setA_W, previousState,MOEAD_Weights.get(w));
+//                runGA(setA_W, previousState,MOEAD_Weights.get(w));
             }
         }
 
@@ -245,6 +245,7 @@ public class NXCS {
         double voteSum = Arrays.stream(votes).sum();
         votes = Arrays.stream(votes).map(d -> d / voteSum).toArray();
 
+
         Classifier choice = XienceMath.choice(population, votes);
 //        if (choice.numerosity > 1) {
 //            choice.numerosity--;
@@ -253,6 +254,7 @@ public class NXCS {
 //        }
         if (choice.numerosity > 1) {
             population.remove(choice);
+            System.out.println(String.format("delete:%s",choice.toString()));
         }
     }
 
@@ -288,6 +290,7 @@ public class NXCS {
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
+        System.out.println("covering");
         Classifier clas = new Classifier(params, state);
         Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()

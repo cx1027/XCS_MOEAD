@@ -328,11 +328,6 @@ public class StepSnapshot {
         build.append(",");
 
         if (this.path.size() > 0) {
-            if (path.size() > 100)
-            {
-                //this.steps = 0;
-                path.clear();
-            }
             build.append((this.path.size() > 30 ? path.stream().limit(30).collect(Collectors.toList()) : path).stream().map(p -> String.format("(%d-%d)", (int) p.getX(), (int) p.getY())).collect(Collectors.joining("->")));
         }
         build.append(",");

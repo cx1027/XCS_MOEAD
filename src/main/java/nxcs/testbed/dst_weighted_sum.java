@@ -72,7 +72,7 @@ public class dst_weighted_sum extends MazeBase {
     public boolean isTraceConditionMeet() {
         return (this.finalStateCount % this.mp.resultInterval == 0)
                 || (this.mp.logLowerFinalState && (
-                (this.finalStateCount < 200 && this.finalStateCount % 50 == 0)
+                (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
                         || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
                 ;
     }

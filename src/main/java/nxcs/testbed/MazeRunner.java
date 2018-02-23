@@ -25,10 +25,10 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        mp.totalTrailCount = 10;
-        mp.finalStateUpperBound = 3500;
-        mp.resultInterval = 50;
-        mp.logLowerFinalState = true;
+        mp.totalTrailCount = 1;
+        mp.finalStateUpperBound = 1500;
+        mp.resultInterval = 1500;
+        mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
 
 
@@ -36,7 +36,7 @@ public class MazeRunner {
         np.stateLength = 24;
         np.numActions = 4;
         np.rho0 = 1000;
-        np.pHash = 0.0;
+        np.pHash = 0.1;
         np.gamma = 0.85;
         np.crossoverRate = 0.8;
         np.mutationRate = 0.04;
@@ -73,10 +73,15 @@ public class MazeRunner {
 
         try {
             //initialize and run
-            mp.mazeFile = "data/maze4.txt";
-            mp.rewardFile = "rewards/maze4loop.json";
-            maze = new maze4_weighted_sum(mp.mazeFile);
+            mp.mazeFile = "data/DSTpart.txt";
+            mp.rewardFile = "rewards/DSTfull.json";
+            maze = new dst_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+
+//            mp.mazeFile = "data/maze4.txt";
+//            mp.rewardFile = "rewards/maze4.json";
+//            maze = new maze4_weighted_sum(mp.mazeFile);
+//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
 
 //            mp.rewardFile= "rewards/maze5.json";
 //            mp.mazeFile= "data/maze5.txt";

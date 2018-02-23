@@ -326,25 +326,25 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, List<double[]> weightList, double obj_r1) {
-        logger.debug("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
+        logger.error("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
 
         for (Point p : this.openLocations) {
-            logger.debug(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
+            logger.error(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
             List<Classifier> C = nxcs.generateMatchSet(getStringForState((int) p.getX(), (int) p.getY()));
             for (double[] weight : weightList) {
-                logger.debug("weight0:" + weight[0] + " weight1:" + weight[1]);
+                logger.error("weight0:" + weight[0] + " weight1:" + weight[1]);
                 List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
                 double[] PA1 = nxcs.generatePredictions(A, 0);
                 for (int i = 0; i < PA1.length; i++) {
-                    logger.debug("PA1[" + i + "]:" + PA1[i]);
+                    logger.error("PA1[" + i + "]:" + PA1[i]);
                 }
                 double[] PA2 = nxcs.generatePredictions(A, 1);
                 for (int i = 0; i < PA2.length; i++) {
-                    logger.debug("PA2[" + i + "]:" + PA2[i]);
+                    logger.error("PA2[" + i + "]:" + PA2[i]);
                 }
                 double[] PA = nxcs.generateTotalPredictions_Norm(A, weight);
                 for (int i = 0; i < PA.length; i++) {
-                    logger.debug("PAt[" + i + "]:" + PA[i]);
+                    logger.error("PAt[" + i + "]:" + PA[i]);
                 }
             }
             //left to f1, right to f2
@@ -385,11 +385,11 @@ public abstract class MazeBase implements Environment, ITrace {
                     }
                 });
 
-                logger.debug("action:" + action);
+                logger.error("action:" + action);
                 // TODO:
                 // 1.why not print fitness of cl???????
                 // 2.print PA for each state to see if PA correct
-                logger.debug(A);
+                logger.error(A);
 
             }
 
@@ -642,11 +642,11 @@ public abstract class MazeBase implements Environment, ITrace {
 
 //        logger.debug("rewardGrid:" + rewardGrid);
 //        logger.info("rewards:" + this.positionRewards);
-        logger.info("===========Maze Parameters============\t" + gson.toJson(this.mp));
-        logger.info("===========NXCS Parameters============\t" + gson.toJson(this.np));
-        logger.info("===========Open Locations=============\t:" + openLocations);
-        logger.info("===========Final States===============\t:" + finalStates);
-        logger.info("===========Position Rewards===========\t" + gson.toJson(this.positionRewards));
+        logger.error("===========Maze Parameters============\t" + gson.toJson(this.mp));
+        logger.error("===========NXCS Parameters============\t" + gson.toJson(this.np));
+        logger.error("===========Open Locations=============\t:" + openLocations);
+        logger.error("===========Final States===============\t:" + finalStates);
+        logger.error("===========Position Rewards===========\t" + gson.toJson(this.positionRewards));
 
         if (checkOpenLocationDuplicateEncoding()) {
             throw new IOException("FATAL Error: duplicate open locations!");
@@ -779,7 +779,7 @@ public abstract class MazeBase implements Environment, ITrace {
             logger.info(String.format("End of trail:%d, %d/%d,  weight: %f, %f", trailIndex, finalStateCount, this.mp.finalStateUpperBound, traceMoeadWeight[0], traceMoeadWeight[1]));
         }//loop test weight
 
-        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, this.getTraceWeight(moeadObj.weights), 0);
+//        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, this.getTraceWeight(moeadObj.weights), 0);
 
         return testStats;
     }
