@@ -26,8 +26,8 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 1500;
-        mp.resultInterval = 1500;
+        mp.finalStateUpperBound = 1000;
+        mp.resultInterval = 1000;
         mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
 
@@ -74,7 +74,7 @@ public class MazeRunner {
         try {
             //initialize and run
             mp.mazeFile = "data/DSTpart.txt";
-            mp.rewardFile = "rewards/DSTfull.json";
+            mp.rewardFile = "rewards/DSTfullUpdate.json";
             maze = new dst_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
 

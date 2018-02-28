@@ -128,13 +128,13 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
-                        moeadObj.popsize = 10;
-                        moeadObj.neighboursize = 3;
+                        moeadObj.popsize = 25;
+                        moeadObj.neighboursize = 5;
                         moeadObj.TotalItrNum = 250;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
                         nxcs.setMoead(moeadObj);
 
-                        nxcs.generateCoveringClassifierbyWeight(this.openLocations, moeadObj.weights, this.np);
+//                        nxcs.generateCoveringClassifierbyWeight(this.openLocations, moeadObj.weights, this.np);
 
                         this.resetPosition();
 
@@ -330,7 +330,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
             logger.error(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
-            List<Classifier> C = nxcs.generateMatchSet(getStringForState((int) p.getX(), (int) p.getY()));
+            List<Classifier> C = nxcs.generateMatchSetAllweight(getStringForState((int) p.getX(), (int) p.getY()));
             for (double[] weight : weightList) {
                 logger.error("weight0:" + weight[0] + " weight1:" + weight[1]);
                 List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
@@ -429,7 +429,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
             Point point = new Point(p + 2, 1);
 
-            List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(this.openLocations.get(p).x, this.openLocations.get(p).y));
+            List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(this.openLocations.get(p).x, this.openLocations.get(p).y));
             double[] PA1 = nxcs.generatePredictions(C, 0);
 
             double[] PA2 = nxcs.generatePredictions(C, 1);
@@ -498,7 +498,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
 
-            List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(p.x, p.y));
+            List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(p.x, p.y));
             double[] PA1 = nxcs.generatePredictions(C, 0);
 
             double[] PA2 = nxcs.generatePredictions(C, 1);
@@ -737,7 +737,7 @@ public abstract class MazeBase implements Environment, ITrace {
                 double[] PA2 = new double[]{0, 0, 0, 0};
                 double[] PA = new double[]{0, 0, 0, 0};
                 if (this.finalStateCount >= 2500) {
-                    List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(openState.x, openState.y));
+                    List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(openState.x, openState.y));
                     PA1 = nxcs.generatePredictions(C, 0);
                     PA2 = nxcs.generatePredictions(C, 1);
                     PA = nxcs.generateTotalPredictions_Norm(C, traceMoeadWeight);
@@ -786,7 +786,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
     private ArrayList<ActionPareto> getParetoByState(NXCS nxcs, Point location, List<double[]> weights) throws Exception {
         ArrayList<ActionPareto> ret = new ArrayList<ActionPareto>();
-        List<Classifier> C = nxcs.generateMatchSet(this.getStringForState(location.x, location.y));
+        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y));
         for (double[] w : weights) {
             for (int a : this.act) {
                 List<Classifier> Cweight = C.stream().filter(x -> Arrays.equals(x.weight_moead, w) && x.action == a).collect(Collectors.toList());
@@ -801,7 +801,11 @@ public abstract class MazeBase implements Environment, ITrace {
                     });
 //                    throw new Exception("more then one classifier in this weight + action");
                 }
+                try{
                 ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
+                }catch (Exception e){
+                    System.out.println(e);
+                }
             }
         }
         return ret;

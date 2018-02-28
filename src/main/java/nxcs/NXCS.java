@@ -160,7 +160,7 @@ public class NXCS {
         int action = INVALID_ACTION;
 
 		/* form [M] */
-        List<Classifier> matchSet = generateMatchSet(previousState);
+        List<Classifier> matchSet = generateWeightMatchSet(previousState, MOEAD_Weights);
         /* select a */
         if (XienceMath.randomInt(params.numActions) <= 1) {
             double[] predictions = generateTotalPredictions_Norm(matchSet, weight);
@@ -187,7 +187,7 @@ public class NXCS {
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
                 List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-//                runGA(setA_W, previousState,MOEAD_Weights.get(w));
+                runGA(setA_W, previousState, MOEAD_Weights.get(w));
             }
         }
 
@@ -195,7 +195,7 @@ public class NXCS {
         previousAction = action;
         /* update s-1=s */
         previousState = curState;
-		/* update timestamp */
+        /* update timestamp */
         timestamp = timestamp + 1;
 
     }
@@ -211,7 +211,26 @@ public class NXCS {
      * @return The set of classifiers that match the given state
      * @see NXCSParameters#thetaMNA
      */
-    public List<Classifier>  generateMatchSet(String state) {
+    public List<Classifier> generateMatchSet(String state, double[] moeadWeight) {
+        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+        List<Classifier> setM = new ArrayList<Classifier>();
+        List<Classifier> setMWeight = new ArrayList<Classifier>();
+        while (setM.size() == 0) {
+            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+            setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight)).collect(Collectors.toList());
+            if (setMWeight.size() < params.thetaMNA) {
+                Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
+                insertIntoPopulation(clas);
+                deleteFromPopulation();
+                setM.clear();
+            }
+        }
+
+        assert (setM.size() >= params.thetaMNA);
+        return setM;
+    }
+
+    public List<Classifier> generateMatchSet(String state) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
         List<Classifier> setM = new ArrayList<Classifier>();
         while (setM.size() == 0) {
@@ -228,11 +247,68 @@ public class NXCS {
         return setM;
     }
 
+    public List<Classifier> generateMatchSetAllweight(String state) {
+        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+        List<Classifier> setM = new ArrayList<Classifier>();
+        while (setM.size() == 0) {
+            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+            if (setM.size() < params.thetaMNA) {
+                Classifier clas = generateCoveringClassifier(state, setM);
+                insertIntoPopulation(clas);
+                deleteFromPopulation();
+                setM.clear();
+            }
+        }
+
+        assert (setM.size() >= params.thetaMNA);
+        return setM;
+    }
+
+    public List<Classifier> generateMatchSetAllweightNoDeletion(String state) {
+        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+        List<Classifier> setM = new ArrayList<Classifier>();
+        while (setM.size() == 0) {
+            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+            if (setM.size() < params.thetaMNA) {
+                Classifier clas = generateCoveringClassifier(state, setM);
+                insertIntoPopulation(clas);
+                setM.clear();
+            }
+        }
+
+        assert (setM.size() >= params.thetaMNA);
+        return setM;
+    }
+
+    public List<Classifier> generateWeightMatchSet(String state, List<double[]> MOEAD_Weights) {
+        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+        List<Classifier> setM = new ArrayList<Classifier>();
+        while (setM.size() == 0) {
+            for (double[] weight : MOEAD_Weights) {
+                try {
+                    setM = population.stream().filter(c -> (stateMatches(c.condition, state) && c.weight_moead.equals(weight))).collect(Collectors.toList());
+                    if (setM.size() < params.thetaMNA) {
+                        Classifier clas = generateCoveringClassifier(state, setM, weight);
+                        insertIntoPopulation(clas);
+                        deleteFromPopulation();
+                        setM.clear();
+                    }
+                } catch (Exception e) {
+                    System.out.println("covering issue" + e);
+                }
+            }
+        }
+        assert (setM.size() >= params.thetaMNA);
+        return setM;
+    }
+
+
     /**
      * Deletes a random classifier in the population, with probability of being
      * deleted proportional to the fitness of that classifier. Reference: Page
      * 14 'An Algorithmic Description of XCS'
      */
+
     private void deleteFromPopulation() {
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
         if (numerositySum <= params.N) {
@@ -247,15 +323,15 @@ public class NXCS {
 
 
         Classifier choice = XienceMath.choice(population, votes);
-//        if (choice.numerosity > 1) {
-//            choice.numerosity--;
-//        } else {
-//            population.remove(choice);
-//        }
         if (choice.numerosity > 1) {
+            choice.numerosity--;
+        } else {
             population.remove(choice);
-            System.out.println(String.format("delete:%s",choice.toString()));
         }
+//        if (choice.numerosity > 1) {
+//            population.remove(choice);
+//            System.out.println(String.format("delete:%s", choice.toString()));
+//        }
     }
 
     /**
@@ -290,13 +366,34 @@ public class NXCS {
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
-        System.out.println("covering");
+//        System.out.println("covering");
         Classifier clas = new Classifier(params, state);
         Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
                 .collect(Collectors.toSet());
         clas.action = unusedActions.iterator().next();
         clas.timestamp = timestamp;
+
+        return clas;
+    }
+
+    private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet, double[] moeadWeight) {
+        assert (state != null && matchSet != null) : "Invalid parameters";
+        assert (state.length() == params.stateLength) : "Invalid state length";
+
+//        System.out.println("covering");
+        Classifier clas = new Classifier(params, state);
+
+        Set<Integer> usedActions = matchSet.stream().filter(c -> c.weight_moead.equals(moeadWeight)).map(c -> c.action).distinct().collect(Collectors.toSet());
+        Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
+                .collect(Collectors.toSet());
+        try {
+            clas.action = unusedActions.iterator().next();
+            clas.timestamp = timestamp;
+            clas.weight_moead = moeadWeight;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
         return clas;
     }
@@ -627,11 +724,11 @@ public class NXCS {
      * @see Classifier#omega
      */
     private List<Classifier> updateSet(String previousState, String currentState, int action, ActionPareto reward, double[] moeadWeight, int groupSize) {
-		/*
-		* select matchset according to moeadWeight
+        /*
+        * select matchset according to moeadWeight
 		*
 		* */
-        List<Classifier> previousMatchSet = generateMatchSet(previousState);
+        List<Classifier> previousMatchSet = generateMatchSet(previousState, moeadWeight);
 
 		/*
 		 * Calculate P according to weights
@@ -655,7 +752,7 @@ public class NXCS {
             // consider weights to for getMinPrediction and getMaxPrediction
 
             //weighted sum
-            List<Classifier> setM = generateMatchSet(currentState);
+            List<Classifier> setM = generateMatchSet(currentState, moeadWeight);
 
             //get normalised PA first
             double[] paretoPA = generateTotalPredictions_Norm(setM, moeadWeight);
@@ -694,21 +791,24 @@ public class NXCS {
         moead_actionSet = actionSet.stream().filter(b -> Arrays.equals(b.weight_moead, moeadWeight)).collect(Collectors.toList());
 
         if (moead_actionSet.size() == 0)
-            System.out.println(String.format("no classifier with this weight:%f, %f",  moeadWeight[0], moeadWeight[1]));
+            System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
         //calculate classifier distance by weight dimension
         Classifier[] actionArray = actionSet.toArray(new Classifier[actionSet.size()]);
         double[] distance = new double[actionArray.length];
-        for (int i = 0; i < actionArray.length; i++) {
-            distance[i] = DistanceCalculatorUtil.calculate(moead_actionSet.get(0).getWeight_moead(), actionArray[i].getWeight_moead());
-        }
-        int[] distanceIndex = Sorting.sorting(distance);
+        try {
+            for (int i = 0; i < actionArray.length; i++) {
+                distance[i] = DistanceCalculatorUtil.calculate(moead_actionSet.get(0).getWeight_moead(), actionArray[i].getWeight_moead());
+            }
+            int[] distanceIndex = Sorting.sorting(distance);
 
-        //find N=params.groupSize neighbour
-        for (int i = 0; i < groupSize; i++) {
-            if (distance[distanceIndex[i]] != 0)
-                moead_actionSet.add(actionArray[distanceIndex[i]]);
+            //find N=params.groupSize neighbour
+            for (int i = 0; i < groupSize; i++) {
+                if (distance[distanceIndex[i]] != 0)
+                    moead_actionSet.add(actionArray[distanceIndex[i]]);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
         }
-
 
         //UPDATE actionSet but here is to update moead_actionSet
         int setNumerosity = moead_actionSet.stream().mapToInt(cl -> cl.numerosity).sum();
