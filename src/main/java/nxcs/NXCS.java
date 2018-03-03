@@ -221,7 +221,7 @@ public class NXCS {
             if (setMWeight.size() < params.thetaMNA) {
                 Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
                 insertIntoPopulation(clas);
-                deleteFromPopulation();
+                deleteFromPopulation(state, moeadWeight);
                 setM.clear();
             }
         }
@@ -230,39 +230,39 @@ public class NXCS {
         return setM;
     }
 
-    public List<Classifier> generateMatchSet(String state) {
-        assert (state != null && state.length() == params.stateLength) : "Invalid state";
-        List<Classifier> setM = new ArrayList<Classifier>();
-        while (setM.size() == 0) {
-            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            if (setM.size() < params.thetaMNA) {
-                Classifier clas = generateCoveringClassifier(state, setM);
-                insertIntoPopulation(clas);
-                deleteFromPopulation();
-                setM.clear();
-            }
-        }
+//    public List<Classifier> generateMatchSet(String state) {
+//        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+//        List<Classifier> setM = new ArrayList<Classifier>();
+//        while (setM.size() == 0) {
+//            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+//            if (setM.size() < params.thetaMNA) {
+//                Classifier clas = generateCoveringClassifier(state, setM);
+//                insertIntoPopulation(clas);
+//                deleteFromPopulation();
+//                setM.clear();
+//            }
+//        }
+//
+//        assert (setM.size() >= params.thetaMNA);
+//        return setM;
+//    }
 
-        assert (setM.size() >= params.thetaMNA);
-        return setM;
-    }
-
-    public List<Classifier> generateMatchSetAllweight(String state) {
-        assert (state != null && state.length() == params.stateLength) : "Invalid state";
-        List<Classifier> setM = new ArrayList<Classifier>();
-        while (setM.size() == 0) {
-            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            if (setM.size() < params.thetaMNA) {
-                Classifier clas = generateCoveringClassifier(state, setM);
-                insertIntoPopulation(clas);
-                deleteFromPopulation();
-                setM.clear();
-            }
-        }
-
-        assert (setM.size() >= params.thetaMNA);
-        return setM;
-    }
+//    public List<Classifier> generateMatchSetAllweight(String state) {
+//        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+//        List<Classifier> setM = new ArrayList<Classifier>();
+//        while (setM.size() == 0) {
+//            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+//            if (setM.size() < params.thetaMNA) {
+//                Classifier clas = generateCoveringClassifier(state, setM);
+//                insertIntoPopulation(clas);
+//                deleteFromPopulation();
+//                setM.clear();
+//            }
+//        }
+//
+//        assert (setM.size() >= params.thetaMNA);
+//        return setM;
+//    }
 
     public List<Classifier> generateMatchSetAllweightNoDeletion(String state) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
@@ -290,7 +290,7 @@ public class NXCS {
                     if (setM.size() < params.thetaMNA) {
                         Classifier clas = generateCoveringClassifier(state, setM, weight);
                         insertIntoPopulation(clas);
-                        deleteFromPopulation();
+                        deleteFromPopulation(state, weight);
                         setM.clear();
                     }
                 } catch (Exception e) {
@@ -309,7 +309,7 @@ public class NXCS {
      * 14 'An Algorithmic Description of XCS'
      */
 
-    private void deleteFromPopulation() {
+    private void deleteFromPopulation(String state, double[] moeadWeight) {
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
         if (numerositySum <= params.N) {
             return;
@@ -328,6 +328,20 @@ public class NXCS {
         } else {
             population.remove(choice);
         }
+
+
+        //TODO:if cl to be choice is the only one in current state/action/weight,
+
+        int action = choice.action;
+        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
+        List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
+        if (actionSet.size() == 0) {
+            // then generate a new cl
+            Classifier clas = generateClassifier(params, state, action, 0, moeadWeight);
+            insertIntoPopulation(clas);
+        }
+
+
 //        if (choice.numerosity > 1) {
 //            population.remove(choice);
 //            System.out.println(String.format("delete:%s", choice.toString()));
@@ -731,7 +745,7 @@ public class NXCS {
         List<Classifier> previousMatchSet = generateMatchSet(previousState, moeadWeight);
 
 		/*
-		 * Calculate P according to weights
+         * Calculate P according to weights
 		 * for steps, to min Q Q=Q+beta(count-Q) if goal achieved Q=Q+beta(100
 		 * or min+1 -Q) if goal not achieved
 		 *
@@ -790,9 +804,14 @@ public class NXCS {
         moead_actionSet.clear();
         moead_actionSet = actionSet.stream().filter(b -> Arrays.equals(b.weight_moead, moeadWeight)).collect(Collectors.toList());
 
-        if (moead_actionSet.size() == 0)
+        if (moead_actionSet.size() == 0) {
             System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
-        //calculate classifier distance by weight dimension
+//            generateCoveringClassifierbyWeight(previousState, moeadWeight);
+            Classifier clas = generateClassifier(params, previousState, action, 0, moeadWeight);
+            insertIntoPopulation(clas);
+
+            moead_actionSet.add(clas);
+        }//calculate classifier distance by weight dimension
         Classifier[] actionArray = actionSet.toArray(new Classifier[actionSet.size()]);
         double[] distance = new double[actionArray.length];
         try {
@@ -969,7 +988,7 @@ public class NXCS {
                 } else {
                     insertIntoPopulation(child);
                 }
-                deleteFromPopulation();
+                deleteFromPopulation(state, moeadWeight);
             }
         }
     }
@@ -1013,6 +1032,17 @@ public class NXCS {
         return clas;
     }
 
+    public Classifier generateClassifier(NXCSParameters params, String state, int act, int timestamp, double[] weight) {
+        Classifier clas = new Classifier(params, state);
+//				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
+//				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
+//						.collect(Collectors.toSet());
+        clas.action = act;
+        clas.timestamp = timestamp;
+        clas.weight_moead = weight;
+        return clas;
+    }
+
 
     /**
      * Checks whether the given condition matches the given state
@@ -1024,8 +1054,16 @@ public class NXCS {
     private boolean stateMatches(String condition, String state) {
         assert (condition != null && condition.length() == params.stateLength) : "Invalid condition";
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
-        return IntStream.range(0, condition.length())
-                .allMatch(i -> condition.charAt(i) == '#' || condition.charAt(i) == state.charAt(i));
+        boolean x = false;
+        try {
+            x= IntStream.range(0, condition.length())
+                    .allMatch(i -> condition.charAt(i) == '#' || condition.charAt(i) == state.charAt(i));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return x;
     }
 
 

@@ -186,7 +186,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                                 this.np.obj1[0], 0, this.np.N));
                             }//for log
                         } // endof z loop
-                        this.printOpenLocationClassifiers(this.finalStateCount,nxcs,moeadObj.weights, targetWeight[0]);
+                        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, moeadObj.weights, targetWeight[0]);
 
                         //write result to csv
 //                        stepLogger.writeLogAndCSVFiles(
@@ -330,7 +330,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
             logger.error(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
-            List<Classifier> C = nxcs.generateMatchSetAllweight(getStringForState((int) p.getX(), (int) p.getY()));
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(getStringForState((int) p.getX(), (int) p.getY()));
             for (double[] weight : weightList) {
                 logger.error("weight0:" + weight[0] + " weight1:" + weight[1]);
                 List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
@@ -420,76 +420,76 @@ public abstract class MazeBase implements Environment, ITrace {
 
     }
 
-    public ArrayList<StepSnapshot> GetTestingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1, int[] ActionSelect) {
-
-        ArrayList<StepSnapshot> PAresult = new ArrayList<StepSnapshot>();
-
-
-        for (int p = 0; p < this.openLocations.size(); p++) {
-
-            Point point = new Point(p + 2, 1);
-
-            List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(this.openLocations.get(p).x, this.openLocations.get(p).y));
-            double[] PA1 = nxcs.generatePredictions(C, 0);
-
-            double[] PA2 = nxcs.generatePredictions(C, 1);
-
-            double[] PA1_nor = new double[4];
-            double[] PA2_nor = new double[4];
-
-            //normalisation
-            for (int i = 0; i < PA1.length; i++) {
-                PA1_nor[i] = nxcs.stepNor(PA1[i], 100);
-            }
-            for (int i = 0; i < PA2.length; i++) {
-                PA2_nor[i] = nxcs.rewardNor(PA2[i], 1000, 0);
-            }
-
-            double[] PAt = nxcs.getTotalPrediciton(weight, PA1_nor, PA2_nor);
-
-            //Q_finalreward
-            double Q_finalreward_left = PA1[1];
-            double Q_finalreward_right = PA1[2];
-            double Q_finalreward_delta = PA1[1] - PA1[2];
-            double Q_finalreward_max = 0;
-            if (PA1[1] > PA1[2]) {
-                Q_finalreward_max = PA1[1];
-            } else {
-                Q_finalreward_max = PA1[2];
-            }
-
-
-            //Q_steps
-            double Q_steps_left = PA2[1];
-            double Q_steps_right = PA2[2];
-            double Q_steps_delta = PA2[1] - PA2[2];
-            double Q_steps_min = 0;
-            if (PA2[1] > PA2[2]) {
-                Q_steps_min = PA2[2];
-            } else {
-                Q_steps_min = PA2[1];
-            }
-
-            double Q_total_left = PAt[1];
-            double Q_total_right = PAt[2];
-
-
-            double Q_finalreward_select = PA1[ActionSelect[p]];
-            double Q_steps_select = PA2[ActionSelect[p]];
-            double Q_total_select = PAt[ActionSelect[p]];
-
-            //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
-
-            StepSnapshot result_row = new StepSnapshot(null, null, 0);//experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
-
-            PAresult.add(result_row);
-            //Q_weighted sum value for different weights
-            //TODO:Q_weighted sum value for different weights
-
-
-        } // open locations
-        return PAresult;
-    }
+//    public ArrayList<StepSnapshot> GetTestingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1, int[] ActionSelect) {
+//
+//        ArrayList<StepSnapshot> PAresult = new ArrayList<StepSnapshot>();
+//
+//
+//        for (int p = 0; p < this.openLocations.size(); p++) {
+//
+//            Point point = new Point(p + 2, 1);
+//
+//            List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(this.openLocations.get(p).x, this.openLocations.get(p).y));
+//            double[] PA1 = nxcs.generatePredictions(C, 0);
+//
+//            double[] PA2 = nxcs.generatePredictions(C, 1);
+//
+//            double[] PA1_nor = new double[4];
+//            double[] PA2_nor = new double[4];
+//
+//            //normalisation
+//            for (int i = 0; i < PA1.length; i++) {
+//                PA1_nor[i] = nxcs.stepNor(PA1[i], 100);
+//            }
+//            for (int i = 0; i < PA2.length; i++) {
+//                PA2_nor[i] = nxcs.rewardNor(PA2[i], 1000, 0);
+//            }
+//
+//            double[] PAt = nxcs.getTotalPrediciton(weight, PA1_nor, PA2_nor);
+//
+//            //Q_finalreward
+//            double Q_finalreward_left = PA1[1];
+//            double Q_finalreward_right = PA1[2];
+//            double Q_finalreward_delta = PA1[1] - PA1[2];
+//            double Q_finalreward_max = 0;
+//            if (PA1[1] > PA1[2]) {
+//                Q_finalreward_max = PA1[1];
+//            } else {
+//                Q_finalreward_max = PA1[2];
+//            }
+//
+//
+//            //Q_steps
+//            double Q_steps_left = PA2[1];
+//            double Q_steps_right = PA2[2];
+//            double Q_steps_delta = PA2[1] - PA2[2];
+//            double Q_steps_min = 0;
+//            if (PA2[1] > PA2[2]) {
+//                Q_steps_min = PA2[2];
+//            } else {
+//                Q_steps_min = PA2[1];
+//            }
+//
+//            double Q_total_left = PAt[1];
+//            double Q_total_right = PAt[2];
+//
+//
+//            double Q_finalreward_select = PA1[ActionSelect[p]];
+//            double Q_steps_select = PA2[ActionSelect[p]];
+//            double Q_total_select = PAt[ActionSelect[p]];
+//
+//            //int exp_repeat, int finalCount, Point openState, double Q_finalreward_left, double Q_finalreward_right,double Q_finalreward_delta,double Q_finalreward_max, double Q_steps_left, double Q_steps_right,double Q_steps_delta,double Q_steps_max,ArrayList<Point> path) {
+//
+//            StepSnapshot result_row = new StepSnapshot(null, null, 0);//experiment_num, timestamp, weight, obj_r1, point, Q_finalreward_left, Q_finalreward_right, Q_finalreward_delta, Q_finalreward_max, Q_steps_left, Q_steps_right, Q_steps_delta, Q_steps_min, Q_total_left, Q_total_right, Q_finalreward_select, Q_steps_select, Q_total_select);
+//
+//            PAresult.add(result_row);
+//            //Q_weighted sum value for different weights
+//            //TODO:Q_weighted sum value for different weights
+//
+//
+//        } // open locations
+//        return PAresult;
+//    }
 
     public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1) {
 
@@ -498,7 +498,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
 
-            List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(p.x, p.y));
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(p.x, p.y));
             double[] PA1 = nxcs.generatePredictions(C, 0);
 
             double[] PA2 = nxcs.generatePredictions(C, 1);
@@ -719,6 +719,7 @@ public abstract class MazeBase implements Environment, ITrace {
     public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
         ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
 
+
         for (double[] traceMoeadWeight : this.getTraceWeight(moeadObj.weights)) {
 
             ArrayList<StepSnapshot> weightStats = new ArrayList<StepSnapshot>();
@@ -736,8 +737,8 @@ public abstract class MazeBase implements Environment, ITrace {
                 double[] PA1 = new double[]{0, 0, 0, 0};
                 double[] PA2 = new double[]{0, 0, 0, 0};
                 double[] PA = new double[]{0, 0, 0, 0};
-                if (this.finalStateCount >= 2500) {
-                    List<Classifier> C = nxcs.generateMatchSetAllweight(this.getStringForState(openState.x, openState.y));
+                if (this.finalStateCount >= 1000) {
+                    List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(openState.x, openState.y));
                     PA1 = nxcs.generatePredictions(C, 0);
                     PA2 = nxcs.generatePredictions(C, 1);
                     PA = nxcs.generateTotalPredictions_Norm(C, traceMoeadWeight);
@@ -801,9 +802,9 @@ public abstract class MazeBase implements Environment, ITrace {
                     });
 //                    throw new Exception("more then one classifier in this weight + action");
                 }
-                try{
-                ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
-                }catch (Exception e){
+                try {
+                    ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
+                } catch (Exception e) {
                     System.out.println(e);
                 }
             }
