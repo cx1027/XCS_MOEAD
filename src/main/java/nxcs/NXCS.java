@@ -63,6 +63,11 @@ public class NXCS {
     private MOEAD moead;
     private IParetoCalculator paretoCalculator;
 
+    public int s1;
+    public int s2;
+    public int s3;
+    public int s4;
+
     /**
      * Constructs an NXCS instance, operating on the given environment with the
      * given parameters
@@ -159,7 +164,7 @@ public class NXCS {
         // action
         int action = INVALID_ACTION;
 
-		/* form [M] */
+        /* form [M] */
         List<Classifier> matchSet = generateWeightMatchSet(previousState, MOEAD_Weights);
         /* select a */
         if (XienceMath.randomInt(params.numActions) <= 1) {
@@ -170,18 +175,18 @@ public class NXCS {
             action = XienceMath.randomInt(params.numActions);
         }
 
-		/* get immediate reward */
+        /* get immediate reward */
         reward = env.getReward(previousState, action);
         if (reward.getAction() == 5) { /*
-                                         * ???which means cant find F in 100,
-										 * then reset in getReward()
-										 */
+         * ???which means cant find F in 100,
+         * then reset in getReward()
+         */
             previousState = null;
         }
         /* get current state */
         String curState = env.getState();
 
-		/* if previous State!null, update [A]-1 and run ga */
+        /* if previous State!null, update [A]-1 and run ga */
         if (previousState != null) {
             /* updateSet include P calculation */
             //TODO:update setA and runGA according to weights
@@ -191,7 +196,7 @@ public class NXCS {
             }
         }
 
-		/* update a-1=a */
+        /* update a-1=a */
         previousAction = action;
         /* update s-1=s */
         previousState = curState;
@@ -377,6 +382,7 @@ public class NXCS {
      * @return The generated classifier
      */
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet) {
+        s3++;
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
@@ -392,6 +398,7 @@ public class NXCS {
     }
 
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet, double[] moeadWeight) {
+        s4++;
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
@@ -739,21 +746,21 @@ public class NXCS {
      */
     private List<Classifier> updateSet(String previousState, String currentState, int action, ActionPareto reward, double[] moeadWeight, int groupSize) {
         /*
-        * select matchset according to moeadWeight
-		*
-		* */
+         * select matchset according to moeadWeight
+         *
+         * */
         List<Classifier> previousMatchSet = generateMatchSet(previousState, moeadWeight);
 
-		/*
+        /*
          * Calculate P according to weights
-		 * for steps, to min Q Q=Q+beta(count-Q) if goal achieved Q=Q+beta(100
-		 * or min+1 -Q) if goal not achieved
-		 *
-		 * for reward 1 or 10 if goal achieved 0 if goal not achieved
-		 *
-		 * narmalization
-		 *
-		 */
+         * for steps, to min Q Q=Q+beta(count-Q) if goal achieved Q=Q+beta(100
+         * or min+1 -Q) if goal not achieved
+         *
+         * for reward 1 or 10 if goal achieved 0 if goal not achieved
+         *
+         * narmalization
+         *
+         */
         double[] P = new double[2]; // STEPS AND REWARDS
         // 0T:10 T0:1
         if (env.isEndOfProblem(currentState)) {
@@ -1026,6 +1033,7 @@ public class NXCS {
 //				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
 //				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
 //						.collect(Collectors.toSet());
+        s1++;
         clas.action = act;
         clas.timestamp = timestamp;
         clas.setWeight_moead(this.moead.weights.get(weight));
@@ -1037,6 +1045,7 @@ public class NXCS {
 //				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
 //				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
 //						.collect(Collectors.toSet());
+        s2++;
         clas.action = act;
         clas.timestamp = timestamp;
         clas.weight_moead = weight;
@@ -1056,11 +1065,9 @@ public class NXCS {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
         boolean x = false;
         try {
-            x= IntStream.range(0, condition.length())
+            x = IntStream.range(0, condition.length())
                     .allMatch(i -> condition.charAt(i) == '#' || condition.charAt(i) == state.charAt(i));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return x;

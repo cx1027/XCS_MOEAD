@@ -26,8 +26,8 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 1000;
-        mp.resultInterval = 1000;
+        mp.finalStateUpperBound = 800;
+        mp.resultInterval = 800;
         mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
 
@@ -77,21 +77,6 @@ public class MazeRunner {
             mp.rewardFile = "rewards/DSTfullUpdate.json";
             maze = new dst_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
-
-//            mp.mazeFile = "data/maze4.txt";
-//            mp.rewardFile = "rewards/maze4.json";
-//            maze = new maze4_weighted_sum(mp.mazeFile);
-//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
-
-//            mp.rewardFile= "rewards/maze5.json";
-//            mp.mazeFile= "data/maze5.txt";
-//            maze = new maze5_weighted_sum(mp.mazeFile);
-//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
-//
-//            mp.rewardFile= "rewards/maze6.json";
-//            mp.mazeFile= "data/maze6.txt";
-//            maze = new maze6_weighted_sum(mp.mazeFile);
-//            maze.initialize(mp, np, parseRewardFile(mp.rewardFile),new HyperVolumn(),new ParetoCalculatorSkew()).run();
         } catch (Exception e) {
             System.out.println(e.toString());
         }
