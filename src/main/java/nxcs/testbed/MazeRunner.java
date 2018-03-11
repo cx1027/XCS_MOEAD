@@ -32,7 +32,7 @@ public class MazeRunner {
         mp.logFolder = "log/maze1/csv/";
 
 
-        np.N = 6000;
+        np.N = 12000;
         np.stateLength = 24;
         np.numActions = 4;
         np.rho0 = 1000;

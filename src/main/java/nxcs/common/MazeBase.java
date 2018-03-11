@@ -158,17 +158,18 @@ public abstract class MazeBase implements Environment, ITrace {
 //                                this.printOpenLocationClassifiers(finalStateCount, nxcs, weight, this.np.obj1[obj_num]);
 //                            }
 
-                            //if end of current trial
+                            //if reach final state
                             if (this.isEndOfProblem(this.getState())) {
-                                statLogger.fatal(String.format("%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4));
+                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.population.size()));
                                 this.resetPosition();
                                 finalStateCount++;
+
                                 logged = false;
                             }
 
-                            //test algorithem if meet the test condition: 1000 arrived final states
+                            //test algorithm if meet the test condition: 1000 arrived final states
                             if (this.isTraceConditionMeet() && !logged) {
-                                // test algorithem
+                                // test algorithm
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
 
 
@@ -200,7 +201,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
 //                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
-                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4));
+                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d, s5=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5));
                     } // totalTrailCount loop
 
                     logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, 0, this.np.obj1[0]));

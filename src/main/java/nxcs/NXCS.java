@@ -67,6 +67,8 @@ public class NXCS {
     public int s2;
     public int s3;
     public int s4;
+    public int s5;
+    public int s6;
 
     /**
      * Constructs an NXCS instance, operating on the given environment with the
@@ -226,7 +228,7 @@ public class NXCS {
             if (setMWeight.size() < params.thetaMNA) {
                 Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
                 insertIntoPopulation(clas);
-                deleteFromPopulation(state, moeadWeight);
+//                deleteFromPopulation(state, moeadWeight);
                 setM.clear();
             }
         }
@@ -315,6 +317,8 @@ public class NXCS {
      */
 
     private void deleteFromPopulation(String state, double[] moeadWeight) {
+        s5++;
+        System.out.println("delete");
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
         if (numerositySum <= params.N) {
             return;
@@ -338,7 +342,9 @@ public class NXCS {
         //TODO:if cl to be choice is the only one in current state/action/weight,
 
         int action = choice.action;
-        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
+//        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
+        List<Classifier> previousMatchSet = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight))
+                .collect(Collectors.toList());
         List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
         if (actionSet.size() == 0) {
             // then generate a new cl
@@ -383,6 +389,7 @@ public class NXCS {
      */
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet) {
         s3++;
+        System.out.println("s3");
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
@@ -399,6 +406,7 @@ public class NXCS {
 
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet, double[] moeadWeight) {
         s4++;
+        System.out.println("s4");
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
@@ -1034,6 +1042,7 @@ public class NXCS {
 //				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
 //						.collect(Collectors.toSet());
         s1++;
+        System.out.println("s1");
         clas.action = act;
         clas.timestamp = timestamp;
         clas.setWeight_moead(this.moead.weights.get(weight));
@@ -1046,6 +1055,7 @@ public class NXCS {
 //				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
 //						.collect(Collectors.toSet());
         s2++;
+        System.out.println("s2");
         clas.action = act;
         clas.timestamp = timestamp;
         clas.weight_moead = weight;
