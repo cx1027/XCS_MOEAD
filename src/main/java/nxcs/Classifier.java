@@ -206,10 +206,11 @@ public class Classifier implements Serializable {
      * @see NXCSParameters#thetaDel
      * @see NXCSParameters#delta
      */
+    //UPDATE DELETE VOTE
     double deleteVote(double averageFitness, int thetaDel, double delta) {
         double vote = averageSize * numerosity;
-        if (experience > thetaDel && (fitnessArray[0] + fitnessArray[1]) / 2 / numerosity < delta * averageFitness) {
-            return vote * averageFitness / ((fitnessArray[0] + fitnessArray[1]) / 2 / numerosity);
+        if (experience > thetaDel && ((fitnessArray[0] + fitnessArray[1]) / 2) / numerosity < delta * averageFitness) {
+            return vote * averageFitness / (((fitnessArray[0] + fitnessArray[1]) / 2) / numerosity);
         }
         return vote;
     }
