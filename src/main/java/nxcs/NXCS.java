@@ -228,7 +228,7 @@ public class NXCS {
             if (setMWeight.size() < params.thetaMNA) {
                 Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
                 insertIntoPopulation(clas);
-//                deleteFromPopulation(state, moeadWeight);
+                deleteFromPopulation(state, moeadWeight);
                 setM.clear();
             }
         }
@@ -341,16 +341,16 @@ public class NXCS {
 
         //TODO:if cl to be choice is the only one in current state/action/weight,
 
-//        int action = choice.action;
-////        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
-//        List<Classifier> previousMatchSet = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight))
-//                .collect(Collectors.toList());
-//        List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
-//        if (actionSet.size() == 0) {
-//            // then generate a new cl
-//            Classifier clas = generateClassifier(params, state, action, 0, moeadWeight);
-//            insertIntoPopulation(clas);
-//        }
+        int action = choice.action;
+//        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
+        List<Classifier> previousMatchSet = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight))
+                .collect(Collectors.toList());
+        List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
+        if (actionSet.size() == 0) {
+            // then generate a new cl
+            Classifier clas = generateClassifier(params, state, action, 0, moeadWeight);
+            insertIntoPopulation(clas);
+        }
 
 
 //        if (choice.numerosity > 1) {
