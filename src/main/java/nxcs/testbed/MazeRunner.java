@@ -26,8 +26,8 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 800;
-        mp.resultInterval = 800;
+        mp.finalStateUpperBound = 1000;
+        mp.resultInterval = 1000;
         mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
 
@@ -40,7 +40,7 @@ public class MazeRunner {
         np.gamma = 0.85;
         np.crossoverRate = 0.8;
         np.mutationRate = 0.04;
-        np.thetaMNA = 4;
+        np.thetaMNA = 2;
         np.thetaGA = 500;
         // np.thetaGA = 0;
         // np.e0 = 0.05;

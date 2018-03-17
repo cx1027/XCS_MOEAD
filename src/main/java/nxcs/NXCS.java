@@ -68,7 +68,9 @@ public class NXCS {
     public int s3;
     public int s4;
     public int s5;
-    public int s6;
+    public int s21;
+    public int s22;
+    public int rungaDelete;
 
     /**
      * Constructs an NXCS instance, operating on the given environment with the
@@ -167,7 +169,14 @@ public class NXCS {
         int action = INVALID_ACTION;
 
         /* form [M] */
+<<<<<<< Updated upstream
         List<Classifier> matchSet = generateWeightMatchSet(previousState, MOEAD_Weights);
+=======
+//        List<Classifier> matchSet = generateWeightMatchSet(previousState, MOEAD_Weights);
+        final String previousState_final = previousState;
+        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, previousState_final))
+                .collect(Collectors.toList());
+>>>>>>> Stashed changes
         /* select a */
         if (XienceMath.randomInt(params.numActions) <= 1) {
             double[] predictions = generateTotalPredictions_Norm(matchSet, weight);
@@ -192,9 +201,10 @@ public class NXCS {
         if (previousState != null) {
             /* updateSet include P calculation */
             //TODO:update setA and runGA according to weights
+            this.rungaDelete=0;
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
                 List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-                runGA(setA_W, previousState, MOEAD_Weights.get(w));
+                runGA(setA_W, previousState, MOEAD_Weights.get(w), finalStateCount, timestamp);
             }
         }
 
@@ -228,7 +238,7 @@ public class NXCS {
             if (setMWeight.size() < params.thetaMNA) {
                 Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
                 insertIntoPopulation(clas);
-//                deleteFromPopulation(state, moeadWeight);
+                deleteFromPopulation(state, moeadWeight);
                 setM.clear();
             }
         }
@@ -348,7 +358,7 @@ public class NXCS {
         List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
         if (actionSet.size() == 0) {
             // then generate a new cl
-            Classifier clas = generateClassifier(params, state, action, 0, moeadWeight);
+            Classifier clas = generateClassifier1(params, state, action, 0, moeadWeight);
             insertIntoPopulation(clas);
         }
 
@@ -421,7 +431,7 @@ public class NXCS {
             clas.timestamp = timestamp;
             clas.weight_moead = moeadWeight;
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         return clas;
@@ -755,6 +765,7 @@ public class NXCS {
     private List<Classifier> updateSet(String previousState, String currentState, int action, ActionPareto reward, double[] moeadWeight, int groupSize) {
         /*
          * select matchset according to moeadWeight
+         * select matchset according to moeadWeight
          *
          * */
         List<Classifier> previousMatchSet = generateMatchSet(previousState, moeadWeight);
@@ -822,7 +833,7 @@ public class NXCS {
         if (moead_actionSet.size() == 0) {
             System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
 //            generateCoveringClassifierbyWeight(previousState, moeadWeight);
-            Classifier clas = generateClassifier(params, previousState, action, 0, moeadWeight);
+            Classifier clas = generateClassifier2(params, previousState, action, 0, moeadWeight);
             insertIntoPopulation(clas);
 
             moead_actionSet.add(clas);
@@ -841,7 +852,7 @@ public class NXCS {
                     moead_actionSet.add(actionArray[distanceIndex[i]]);
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
         //UPDATE actionSet but here is to update moead_actionSet
@@ -948,7 +959,7 @@ public class NXCS {
      * @see NXCSParameters#chi
      * @see NXCSParameters#doGASubsumption
      */
-    private void runGA(List<Classifier> setA, String state, double[] moeadWeight) {
+    private void runGA(List<Classifier> setA, String state, double[] moeadWeight, int finalStateCount, int timestamp) {
         assert (setA != null && state != null) : "Invalid parameters";
         // assert(setA.size() > 0) : "No action set";
         if (setA.size() == 0)
@@ -1004,6 +1015,7 @@ public class NXCS {
                     insertIntoPopulation(child);
                 }
                 deleteFromPopulation(state, moeadWeight);
+                this.rungaDelete++;
             }
         }
     }
@@ -1056,6 +1068,32 @@ public class NXCS {
 //						.collect(Collectors.toSet());
         s2++;
         System.out.println("s2");
+        clas.action = act;
+        clas.timestamp = timestamp;
+        clas.weight_moead = weight;
+        return clas;
+    }
+
+    public Classifier generateClassifier1(NXCSParameters params, String state, int act, int timestamp, double[] weight) {
+        Classifier clas = new Classifier(params, state);
+//				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
+//				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
+//						.collect(Collectors.toSet());
+        s21++;
+//        System.out.println("s2");
+        clas.action = act;
+        clas.timestamp = timestamp;
+        clas.weight_moead = weight;
+        return clas;
+    }
+
+    public Classifier generateClassifier2(NXCSParameters params, String state, int act, int timestamp, double[] weight) {
+        Classifier clas = new Classifier(params, state);
+//				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
+//				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
+//						.collect(Collectors.toSet());
+        s22++;
+//        System.out.println("s2");
         clas.action = act;
         clas.timestamp = timestamp;
         clas.weight_moead = weight;

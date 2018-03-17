@@ -41,7 +41,6 @@ public class dst_weighted_sum extends MazeBase {
     @Override
     /* return reward and action */
     public ActionPareto getReward(String state, int action) {
-        stepCount++;
         ActionPareto reward = new ActionPareto(new Qvector(-1, 0), 1);
         try {
             this.move(action);

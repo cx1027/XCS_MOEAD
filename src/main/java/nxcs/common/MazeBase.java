@@ -66,6 +66,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
     protected final static Logger logger = Logger.getLogger(MazeBase.class);
     protected final static Logger statLogger = Logger.getLogger("statlogger");
+    protected final static Logger steplogger = Logger.getLogger("steplogger");
 
     private Gson gson = new Gson();
     private HyperVolumn hyperVolumnCalculator;
@@ -152,6 +153,8 @@ public abstract class MazeBase implements Environment, ITrace {
                             //run each step
                             nxcs.runIteration(finalStateCount, this.getState(), targetWeight, this.np.obj1[0], moeadObj.getWeights());
                             logger.debug(String.format("Trail:%d, finalStateCount:%d, [%s]=>[%s]", trailIndex, finalStateCount, from, this.getCurrentLocation()));
+                            steplogger.fatal(String.format("%d,%d,%d", this.finalStateCount, this.stepCount, nxcs.rungaDelete));
+
 
 //                            if (finalStateCount > 2497) {
 //                                //logger.info("print classifiers at finalstatecount: " + finalStateCount);
@@ -160,7 +163,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                             //if reach final state
                             if (this.isEndOfProblem(this.getState())) {
-                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.population.size()));
+                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.population.size(), nxcs.s21, nxcs.s22, this.stepCount));
                                 this.resetPosition();
                                 finalStateCount++;
 
@@ -201,7 +204,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
 //                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
-                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d, s5=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5));
+                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d, s5=%d, s21=%d, s22=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.s21, nxcs.s22));
                     } // totalTrailCount loop
 
                     logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, 0, this.np.obj1[0]));
@@ -804,7 +807,7 @@ public abstract class MazeBase implements Environment, ITrace {
                 try {
                     ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
                 } catch (Exception e) {
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
             }
         }
