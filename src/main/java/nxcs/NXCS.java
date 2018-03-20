@@ -112,7 +112,7 @@ public class NXCS {
         //TODO: state match and weight match
 //        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state))
 //                .collect(Collectors.toList());
-        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(weight))
+        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))
                 .collect(Collectors.toList());
         double[] predictions = generateTotalPredictions_Norm(matchSet, weight);
         return getActionDeterministic(predictions);
@@ -224,11 +224,11 @@ public class NXCS {
         List<Classifier> setMWeight = new ArrayList<Classifier>();
         while (setM.size() == 0) {
             setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight)).collect(Collectors.toList());
+            setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList());
             if (setMWeight.size() < params.thetaMNA) {
                 Classifier clas = generateCoveringClassifier(state, setM, moeadWeight);
                 insertIntoPopulation(clas);
-                deleteFromPopulation(state, moeadWeight);
+//                deleteFromPopulation(state, moeadWeight);
                 setM.clear();
             }
         }
@@ -293,7 +293,7 @@ public class NXCS {
         while (setM.size() == 0) {
             for (double[] weight : MOEAD_Weights) {
                 try {
-                    setM = population.stream().filter(c -> (stateMatches(c.condition, state) && c.weight_moead.equals(weight))).collect(Collectors.toList());
+                    setM = population.stream().filter(c -> (stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
                     if (setM.size() < params.thetaMNA) {
                         Classifier clas = generateCoveringClassifier(state, setM, weight);
                         insertIntoPopulation(clas);
@@ -310,53 +310,117 @@ public class NXCS {
     }
 
 
+    public ArrayList<String> replace(String target) {
+        return replaceHelper(target, target.length() - 1);
+    }
+
+    public ArrayList<String> replaceHelper(String target, int to) {
+        char c = target.charAt(to);
+        if (to == 0) {
+            ArrayList<String> res = new ArrayList<String>();
+            if (c == '#') {
+                res.add("0");
+                res.add("1");
+            } else {
+                res.add(c + "");
+            }
+            return res;
+        }
+        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> preRes = replaceHelper(target, to - 1);
+        if (c == '#') {
+            for (String token : preRes) {
+                res.add(token + "0");
+                res.add(token + "1");
+            }
+        } else {
+            for (String token : preRes) {
+                res.add(token + c);
+            }
+        }
+        return res;
+    }
+
     /**
      * Deletes a random classifier in the population, with probability of being
      * deleted proportional to the fitness of that classifier. Reference: Page
      * 14 'An Algorithmic Description of XCS'
      */
-
     private void deleteFromPopulation(String state, double[] moeadWeight) {
         s5++;
-//        System.out.println("delete");
+
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
         if (numerositySum <= params.N) {
             return;
         }
 
         double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
-        double[] votes = population.stream()
+        double[] xvotes = population.stream()
                 .mapToDouble(c -> c.deleteVote(averageFitness, params.thetaDel, params.delta)).toArray();
-        double voteSum = Arrays.stream(votes).sum();
-        votes = Arrays.stream(votes).map(d -> d / voteSum).toArray();
-
-
-        Classifier choice = XienceMath.choice(population, votes);
-        if (choice.numerosity > 1) {
-            choice.numerosity--;
-        } else {
-            population.remove(choice);
+//        double voteSum = Arrays.stream(xvotes).sum();
+//        double[] votes = Arrays.stream(xvotes).map(d -> d / xum).toArray();
+        double voteSum = 0;
+        for (int i = 0; i < xvotes.length; i++) {
+            voteSum += xvotes[i];
+        }
+        double xum = voteSum;
+        double[] bvotes = new double[xvotes.length];
+        for (int i = 0; i < xvotes.length; i++) {
+            bvotes[i] = xvotes[i] / xum;
         }
 
+        boolean deletedFlag = false;
+        int cnt = 0;
+        List<Classifier> tempList = new ArrayList<>();
+        tempList.addAll(population);
+        Classifier previousChoice = null;
+        while (!deletedFlag) {
+            cnt++;
+            Classifier xchoice = XienceMath.choice(tempList, bvotes);
+//            System.out.println(String.format("loop: %d\tweitght:%f:%f\tchoice:%s", cnt, moeadWeight[0], moeadWeight[1], xchoice.toString()));
+            if (previousChoice != null && previousChoice.id == xchoice.id) {
+                tempList.remove(xchoice);
+                double avgFitness = tempList.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
 
-        //TODO:if cl to be choice is the only one in current state/action/weight,
+                xvotes = tempList.stream().mapToDouble(c -> c.deleteVote(avgFitness, params.thetaDel, params.delta)).toArray();
+                voteSum = 0;
+                for (int i = 0; i < xvotes.length; i++) {
+                    voteSum += xvotes[i];
+                }
+                xum = voteSum;
+                bvotes = new double[xvotes.length];
+                for (int i = 0; i < xvotes.length; i++) {
+                    bvotes[i] = xvotes[i] / xum;
+//                    System.out.println(i + "," + bvotes[i]);
+                }
+                xchoice = XienceMath.choice(tempList, bvotes);
+                previousChoice = xchoice;
+//                System.out.println(String.format("loop: %d\tweitght:%f:%f\tchoice:%s", cnt, moeadWeight[0], moeadWeight[1], xchoice.toString()));
+            }
+            Classifier choice = xchoice;
+            if (choice.numerosity > 1) {
+                choice.numerosity--;
+                deletedFlag = true;
+                System.out.println(String.format("choide numerisity--:%s", choice.toString()));
+                continue;
+            }
+            for (String tstate : replace(choice.condition)) {
+                List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
+                        && Arrays.equals(c.weight_moead, choice.weight_moead)
+                        && c.action == choice.action)
+                        .collect(Collectors.toList());
 
-        int action = choice.action;
-//        List<Classifier> previousMatchSet = generateMatchSet(state, moeadWeight);
-        List<Classifier> previousMatchSet = population.stream().filter(c -> stateMatches(c.condition, state) && c.weight_moead.equals(moeadWeight))
-                .collect(Collectors.toList());
-        List<Classifier> actionSet = previousMatchSet.stream().filter(cl -> cl.action == action && cl.weight_moead.equals(choice.weight_moead)).collect(Collectors.toList());
-        if (actionSet.size() == 0) {
-            // then generate a new cl
-            Classifier clas = generateClassifier(params, state, action, 0, moeadWeight);
-            insertIntoPopulation(clas);
+                if (actionSet.size() > 1) {
+                    population.remove(actionSet.get(0));//TODO: how to choose which one to delete
+                    deletedFlag = true;
+                    System.out.println(String.format("delete:%s", actionSet.get(0).toString()));
+                    break;
+                }
+            }
+
+            previousChoice = xchoice;
         }
 
-
-//        if (choice.numerosity > 1) {
-//            population.remove(choice);
-//            System.out.println(String.format("delete:%s", choice.toString()));
-//        }
     }
 
     /**
@@ -370,7 +434,7 @@ public class NXCS {
      */
     public void insertIntoPopulation(Classifier clas) {
         assert (clas != null) : "Cannot insert null classifier";
-        Optional<Classifier> same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && c.weight_moead.equals(clas.weight_moead)).findFirst();
+        Optional<Classifier> same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
         if (same.isPresent()) {
             same.get().numerosity++;
         } else {
@@ -413,7 +477,7 @@ public class NXCS {
 //        System.out.println("covering");
         Classifier clas = new Classifier(params, state);
 
-        Set<Integer> usedActions = matchSet.stream().filter(c -> c.weight_moead.equals(moeadWeight)).map(c -> c.action).distinct().collect(Collectors.toSet());
+        Set<Integer> usedActions = matchSet.stream().filter(c -> Arrays.equals(c.weight_moead, moeadWeight)).map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
                 .collect(Collectors.toSet());
         try {
@@ -923,7 +987,7 @@ public class NXCS {
             List<Classifier> toRemove = new ArrayList<Classifier>();
             for (Classifier clas : setA) {
                 //TODO:SUBSUMPTION WHEN have equally weights
-                if (cl.isMoreGeneral(clas) && cl.weight_moead.equals(clas.weight_moead)) {
+                if (cl.isMoreGeneral(clas) && Arrays.equals(cl.weight_moead, clas.weight_moead)) {
                     cl.numerosity = cl.numerosity + clas.numerosity;
                     toRemove.add(clas);
                 }
@@ -1009,23 +1073,20 @@ public class NXCS {
     }
 
 
-    public void generateCoveringClassifierbyWeight(List<Point> openLocations, List<double[]> weights, NXCSParameters params) {
-//		assert (state != null && matchSet != null) : "Invalid parameters";
-//		assert (state.length() == params.stateLength) : "Invalid state length";
-
-        for (int w = 0; w < weights.size(); w++) {
-            for (Point location : openLocations) {
-
-                String state = env.getStringForState(location.x, location.y);
-
-                for (int act = 0; act < 4; act++) {
-
-                    Classifier clas = generateClassifier(params, state, act, 0, w);
-
-                    insertIntoPopulation(clas);
-                }
-            }
-        }
+//    public void generateCoveringClassifierbyWeight(List<Point> openLocations, List<double[]> weights, NXCSParameters params) {
+////		assert (state != null && matchSet != null) : "Invalid parameters";
+////		assert (state.length() == params.stateLength) : "Invalid state length";
+//
+//        for (int w = 0; w < weights.size(); w++) {
+//            for (Point location : openLocations) {
+//                String state = env.getStringForState(location.x, location.y);
+//                for (Integer act : env.getAllActions()) {
+//                    Classifier clas = generateClassifier(params, state, act, 0, w);
+//
+//                    insertIntoPopulation(clas);
+//                }
+//            }
+//        }
 //
 //        for (Point location : openLocations) {
 //            for (int act = 0; act < 4; act++) {
@@ -1034,7 +1095,7 @@ public class NXCS {
 //                System.out.println(String.format("Location: %s, act:%d, classifier Size:%d", location, act, actionSet.size()));
 //            }
 //        }
-    }
+//    }
 
     public Classifier generateClassifier(NXCSParameters params, String state, int act, int timestamp, int weight) {
         Classifier clas = new Classifier(params, state);

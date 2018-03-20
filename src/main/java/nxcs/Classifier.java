@@ -303,7 +303,7 @@ public class Classifier implements Serializable {
      */
     public String toString() {
         StringBuilder build = new StringBuilder();
-        build.append(String.format("Classifier [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d", condition, action, numerosity, weight_moead[0], weight_moead[1], experience));
+        build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience));
         for (int i = 0; i < error.length; i++) {//TODO:
             build.append(String.format(", Fitness: %3.2f, Error: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], prediction[i]));
         }
@@ -311,5 +311,5 @@ public class Classifier implements Serializable {
 
         return build.toString();
     }
-
+    public Classifier parent;
 }

@@ -45,7 +45,7 @@ public abstract class MazeBase implements Environment, ITrace {
     /**
      * A list of points representing locations we can safely move the agent to
      */
-    protected ArrayList<Point> openLocations;
+    public ArrayList<Point> openLocations;
     /**
      * A list of points representing the final states in the environment
      */
@@ -102,7 +102,18 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     public void run() throws Exception {
-
+        List<String> choicestateList = new ArrayList<>();
+        String choice = "#1#";
+        for (int i = 0; i < choice.length(); i++) {
+            char tchar = choice.charAt(i);
+            if (tchar == '#') {
+                char[] myNameChars = choice.toCharArray();
+                myNameChars[i] = '0';
+                choicestateList.add(String.valueOf(myNameChars));
+                myNameChars[i] = '1';
+                choicestateList.add(String.valueOf(myNameChars));
+            }
+        }
         try {
 
             boolean logged = false;
@@ -243,7 +254,7 @@ public abstract class MazeBase implements Environment, ITrace {
      * @param y The y position in the maze to get
      * @return The two-bit encoding of the given position
      */
-    private String getEncoding(int x, int y) {
+    public String getEncoding(int x, int y) {
         if (x < 0 || y < 0 || y >= mazeTiles.length || x >= mazeTiles[0].length) {
             return encodingTable.get(null);
         } else {
@@ -821,5 +832,9 @@ public abstract class MazeBase implements Environment, ITrace {
 
     public List<double[]> getTraceWeight(List<double[]> traceWeights) {
         return traceWeights;
+    }
+
+    public int getCurrentFinalStateCount() {
+        return this.finalStateCount;
     }
 }
