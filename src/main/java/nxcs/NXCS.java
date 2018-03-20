@@ -347,7 +347,7 @@ public class NXCS {
      * 14 'An Algorithmic Description of XCS'
      */
     private void deleteFromPopulation() {
-        s5++;
+        s6++;
 
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
         if (numerositySum <= params.N) {
@@ -401,7 +401,7 @@ public class NXCS {
             if (choice.numerosity > 1) {
                 choice.numerosity--;
                 deletedFlag = true;
-                System.out.println(String.format("choide numerisity--:%s", choice.toString()));
+//                System.out.println(String.format("choide numerisity--:%s", choice.toString()));
                 continue;
             }
             for (String tstate : replace(choice.condition)) {
@@ -413,7 +413,7 @@ public class NXCS {
                 if (actionSet.size() > 1) {
                     population.remove(choice);
                     deletedFlag = true;
-                    System.out.println(String.format("delete:%s", choice.toString()));
+//                    System.out.println(String.format("delete:%s", choice.toString()));
                     break;
                 }
             }
@@ -433,6 +433,7 @@ public class NXCS {
      * @param
      */
     public void insertIntoPopulation(Classifier clas) {
+        s5++;
         assert (clas != null) : "Cannot insert null classifier";
         Optional<Classifier> same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
         if (same.isPresent()) {

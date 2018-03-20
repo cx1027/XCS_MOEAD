@@ -171,7 +171,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                             //if reach final state
                             if (this.isEndOfProblem(this.getState())) {
-                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.population.size()));
+                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5,nxcs.s6, nxcs.population.size()));
                                 this.resetPosition();
                                 finalStateCount++;
 
