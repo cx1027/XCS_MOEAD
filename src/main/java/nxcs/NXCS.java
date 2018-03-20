@@ -297,7 +297,7 @@ public class NXCS {
                     if (setM.size() < params.thetaMNA) {
                         Classifier clas = generateCoveringClassifier(state, setM, weight);
                         insertIntoPopulation(clas);
-                        deleteFromPopulation(state, weight);
+                        deleteFromPopulation();
                         setM.clear();
                     }
                 } catch (Exception e) {
@@ -346,7 +346,7 @@ public class NXCS {
      * deleted proportional to the fitness of that classifier. Reference: Page
      * 14 'An Algorithmic Description of XCS'
      */
-    private void deleteFromPopulation(String state, double[] moeadWeight) {
+    private void deleteFromPopulation() {
         s5++;
 
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
@@ -411,9 +411,9 @@ public class NXCS {
                         .collect(Collectors.toList());
 
                 if (actionSet.size() > 1) {
-                    population.remove(actionSet.get(0));//TODO: how to choose which one to delete
+                    population.remove(choice);
                     deletedFlag = true;
-                    System.out.println(String.format("delete:%s", actionSet.get(0).toString()));
+                    System.out.println(String.format("delete:%s", choice.toString()));
                     break;
                 }
             }
@@ -888,6 +888,7 @@ public class NXCS {
 //            generateCoveringClassifierbyWeight(previousState, moeadWeight);
             Classifier clas = generateClassifier(params, previousState, action, 0, moeadWeight);
             insertIntoPopulation(clas);
+            deleteFromPopulation();
 
             moead_actionSet.add(clas);
         }//calculate classifier distance by weight dimension
@@ -1067,7 +1068,7 @@ public class NXCS {
                 } else {
                     insertIntoPopulation(child);
                 }
-                deleteFromPopulation(state, moeadWeight);
+                deleteFromPopulation();
             }
         }
     }
