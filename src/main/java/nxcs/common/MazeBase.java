@@ -141,7 +141,7 @@ public abstract class MazeBase implements Environment, ITrace {
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
                         moeadObj.popsize = 25;
-                        moeadObj.neighboursize = 5;
+                        moeadObj.neighboursize = 3;
                         moeadObj.TotalItrNum = 250;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
                         nxcs.setMoead(moeadObj);
@@ -583,6 +583,7 @@ public abstract class MazeBase implements Environment, ITrace {
         encodingTable.put(null, "100");// For out of the maze positions
         encodingTable.put('F', "111");
         encodingTable.put('N', "011");
+        encodingTable.put('M', "001");
 
         // encodingTable.put('1', "001");
         // encodingTable.put('3', "011");

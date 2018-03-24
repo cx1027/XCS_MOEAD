@@ -147,7 +147,7 @@ public class NXCSParameters {
 
 	public int[] obj1;
 	
-	public int groupSize = 5;
+	public int groupSize = 1;
 
 	 
 }

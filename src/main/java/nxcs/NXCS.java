@@ -194,7 +194,7 @@ public class NXCS {
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
                 List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-                runGA(setA_W, previousState, MOEAD_Weights.get(w));
+//                runGA(setA_W, previousState, MOEAD_Weights.get(w));
             }
         }
 
@@ -417,6 +417,7 @@ public class NXCS {
                     break;
                 }
             }
+
 
             previousChoice = xchoice;
         }
