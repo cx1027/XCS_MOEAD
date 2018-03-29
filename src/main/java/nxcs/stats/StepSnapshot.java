@@ -293,35 +293,35 @@ public class StepSnapshot {
         build.append(String.format("(%d-%d)", (int) this.finalState.getX(), (int) this.finalState.getY()));
         build.append(",");
 
-        build.append(String.format("%f", this.Q_finalreward_left));
-        build.append(",");
-        build.append(String.format("%f", this.Q_finalreward_right));
-        build.append(",");
-        build.append(String.format("%f", this.Q_finalreward_delta));
-        build.append(",");
-        build.append(String.format("%f", this.Q_finalreward_max));
+//        build.append(String.format("%f", this.Q_finalreward_left));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_finalreward_right));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_finalreward_delta));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_finalreward_max));
+//
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_steps_left));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_steps_right));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_steps_delta));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_steps_min));
+//        build.append(",");
+//
+//        build.append(String.format("%f", this.Q_total_left));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_total_right));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_finalreward_select));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_steps_select));
+//        build.append(",");
+//        build.append(String.format("%f", this.Q_total_select));
 
-        build.append(",");
-        build.append(String.format("%f", this.Q_steps_left));
-        build.append(",");
-        build.append(String.format("%f", this.Q_steps_right));
-        build.append(",");
-        build.append(String.format("%f", this.Q_steps_delta));
-        build.append(",");
-        build.append(String.format("%f", this.Q_steps_min));
-        build.append(",");
-
-        build.append(String.format("%f", this.Q_total_left));
-        build.append(",");
-        build.append(String.format("%f", this.Q_total_right));
-        build.append(",");
-        build.append(String.format("%f", this.Q_finalreward_select));
-        build.append(",");
-        build.append(String.format("%f", this.Q_steps_select));
-        build.append(",");
-        build.append(String.format("%f", this.Q_total_select));
-
-        build.append(",");
+//        build.append(",");
         build.append(String.format("%d", this.steps));
         build.append(",");
         build.append(String.format("%f", this.hyperVolumn));

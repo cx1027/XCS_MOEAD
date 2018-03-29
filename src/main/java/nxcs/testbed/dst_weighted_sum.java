@@ -9,6 +9,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 //import nxcs.Trace;
 
@@ -79,5 +80,15 @@ public class dst_weighted_sum extends MazeBase {
 
     public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths(){
         return null;
+    }
+
+
+    @Override
+    public List<double[]> getTraceWeight(List<double[]> traceWeights) {
+        List<double[]> ret = new ArrayList<double[]>();
+        ret.add(traceWeights.get(0));
+        ret.add(traceWeights.get(1));
+        ret.add(traceWeights.get(traceWeights.size()-1));
+        return traceWeights;
     }
 }

@@ -171,7 +171,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                             //if reach final state
                             if (this.isEndOfProblem(this.getState())) {
-                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5,nxcs.s6, nxcs.population.size()));
+                                statLogger.fatal(String.format("%d,%d,%d,%d,%d,%d,%d,%d", this.finalStateCount, nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.s6, nxcs.population.size()));
                                 this.resetPosition();
                                 finalStateCount++;
 
@@ -748,15 +748,19 @@ public abstract class MazeBase implements Environment, ITrace {
                 double[] PA1 = new double[]{0, 0, 0, 0};
                 double[] PA2 = new double[]{0, 0, 0, 0};
                 double[] PA = new double[]{0, 0, 0, 0};
-                if (this.finalStateCount >= 1000) {
-                    List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(openState.x, openState.y));
-                    PA1 = nxcs.generatePredictions(C, 0);
-                    PA2 = nxcs.generatePredictions(C, 1);
-                    PA = nxcs.generateTotalPredictions_Norm(C, traceMoeadWeight);
-                }
+//                if (this.finalStateCount >= 1000) {
+//                    List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(openState.x, openState.y));
+//                    PA1 = nxcs.generatePredictions(C, 0);
+//                    PA2 = nxcs.generatePredictions(C, 1);
+//                    PA = nxcs.generateTotalPredictions_Norm(C, traceMoeadWeight);
+//                    statLogger.info(String.format("tracePA:%f-%f,%f,%f,%f,%f", PA[0], PA[1], PA[2], PA[3]));
+//                }
 
                 while (!this.isEndOfProblem(this.getState())) {
                     String state = this.getState();
+                    if (stepCount > 20) {
+                        nxcs.getMatchsetFromClassifier(nxcs.matchSet(state, traceMoeadWeight).get(0));
+                    }
                     int action = nxcs.classify(state, traceMoeadWeight);
                     logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s, action:%d", resetPoint, this.stepCount, this.getCurrentLocation(), action));
 
@@ -775,7 +779,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path
-                                , PA1, PA2, PA);
+                                , nxcs.PA0, nxcs.PA1, nxcs.PAtotal);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                         weightStats.add(row);
                         logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
@@ -796,6 +800,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return testStats;
     }
 
+
     private ArrayList<ActionPareto> getParetoByState(NXCS nxcs, Point location, List<double[]> weights) throws Exception {
         ArrayList<ActionPareto> ret = new ArrayList<ActionPareto>();
         List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y));
@@ -803,12 +808,12 @@ public abstract class MazeBase implements Environment, ITrace {
             for (int a : this.act) {
                 List<Classifier> Cweight = C.stream().filter(x -> Arrays.equals(x.weight_moead, w) && x.action == a).collect(Collectors.toList());
                 if (Cweight.size() > 1) {
-                    logger.info("more then one classifier in this weight + action");
+                    logger.info("more than one classifier in this weight + action");
                     //TODO: sort by fitness and retain the one with highest fitness
                     Collections.sort(Cweight, new Comparator<Classifier>() {
                         @Override
                         public int compare(Classifier o1, Classifier o2) {
-                            return o1.fitness == o2.fitness ? 0 : (o1.fitness > o2.fitness ? 1 : -1);
+                            return o1.fitness == o2.fitness ? 0 : (o1.fitness > o2.fitness ? -1 : 1);
                         }
                     });
 //                    throw new Exception("more then one classifier in this weight + action");
