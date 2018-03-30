@@ -71,7 +71,8 @@ public class NXCSParameters {
 	 * The learning rate for updating fitness, prediction, prediction error, and
 	 * action set size estimate in XCS's classifiers.
 	 */
-	public double beta = 0.2;
+//	public double beta = 0.2;
+	public double beta = 0.1;
 
 	/**
 	 * Specifies the exponent in the power function for the fitness evaluation.

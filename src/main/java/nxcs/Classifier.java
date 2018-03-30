@@ -223,7 +223,7 @@ public class Classifier implements Serializable {
      * @see NXCSParameters#e0
      */
     boolean couldSubsume(double thetaSub, double e0) {
-        return experience > thetaSub && (error[0] + error[1]) / 2 < e0;
+        return experience > thetaSub && ((error[0] + error[1]) / 2) < e0;
     }
 
     /**

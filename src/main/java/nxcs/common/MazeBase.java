@@ -772,14 +772,26 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     this.move(action);
                     path.add(this.getCurrentLocation());
+                    logger.info(String.format("trace classify,%s,%f,%f,%f,%f,%f,%f,%d", this.getCurrentLocation(), traceMoeadWeight[0], traceMoeadWeight[1], nxcs.PAtotal[0], nxcs.PAtotal[1], nxcs.PAtotal[2], nxcs.PAtotal[3], action));
 
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
                         //if path>100(step>100) means fail to reach the final state
-
+                        double[] pa0 = new double[nxcs.PA0.length];
+                        double[] pa1 = new double[nxcs.PA0.length];
+                        double[] paTotal = new double[nxcs.PA0.length];
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            pa0[i] = nxcs.PA0[i];
+                        }
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            pa1[i] = nxcs.PA1[i];
+                        }
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            paTotal[i] = nxcs.PAtotal[i];
+                        }
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path
-                                , nxcs.PA0, nxcs.PA1, nxcs.PAtotal);
+                                , pa0, pa1, paTotal);
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                         weightStats.add(row);
                         logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
@@ -843,7 +855,8 @@ public abstract class MazeBase implements Environment, ITrace {
     public int getCurrentFinalStateCount() {
         return this.finalStateCount;
     }
-    public List<Integer> getActions(){
+
+    public List<Integer> getActions() {
         return this.act;
     }
 }

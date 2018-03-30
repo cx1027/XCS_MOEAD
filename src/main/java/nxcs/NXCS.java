@@ -1006,7 +1006,7 @@ public class NXCS implements IBase {
             List<Classifier> toRemove = new ArrayList<Classifier>();
             for (Classifier clas : setA) {
                 //TODO:SUBSUMPTION WHEN have equally weights
-                if (cl.isMoreGeneral(clas) && Arrays.equals(cl.weight_moead, clas.weight_moead)) {
+                if (cl.isMoreGeneral(clas) && Arrays.equals(cl.weight_moead, clas.weight_moead) && cl.action==clas.action) {
                     cl.numerosity = cl.numerosity + clas.numerosity;
                     toRemove.add(clas);
                 }
