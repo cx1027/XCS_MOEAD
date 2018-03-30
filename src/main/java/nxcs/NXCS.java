@@ -129,7 +129,7 @@ public class NXCS implements IBase {
         this.PA1 = generatePredictions(matchSet, 1);
         this.PAtotal = predictions;
         int act = getActionDeterministic(predictions);
-        logger.info(String.format("classify,%f,%f,%f,%f,%d", predictions[0], predictions[1], predictions[2], predictions[3], act));
+        logger.info(String.format("classify,%s,%f,%f,%f,%f,%d", env.getCurrentLocation(), predictions[0], predictions[1], predictions[2], predictions[3], act));
         return act;
     }
 
@@ -209,7 +209,7 @@ public class NXCS implements IBase {
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
                 List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-//                runGA(setA_W, previousState, MOEAD_Weights.get(w));
+                runGA(setA_W, previousState, MOEAD_Weights.get(w));
             }
         }
 
@@ -240,12 +240,28 @@ public class NXCS implements IBase {
         while (setMWeight.size() == 0) {
 //            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
             setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList());
-            if (setMWeight.size() < params.thetaMNA) {
-                Classifier clas = generateCoveringClassifier(state, setMWeight, moeadWeight);
-                insertIntoPopulation(clas);
-//                deleteFromPopulation(state, moeadWeight);
-                setMWeight.clear();
+            boolean isUpdated = false;
+            for (Integer action : env.getActions()) {
+                List<Classifier> setMAct = setMWeight.stream().filter(
+                        c -> c.action == action).collect(Collectors.toList());
+
+                if (setMAct.size() < 1) {
+                    Classifier clas = generateClassifier(params, state, action, timestamp, moeadWeight);
+                    insertIntoPopulation(clas);
+                    deleteFromPopulation();
+                    isUpdated = isUpdated || true;
+                }
             }
+            //regenerate matchset after inserted new classifiers
+            if (isUpdated)
+                setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList());
+
+//            if (setMWeight.size() < params.thetaMNA) {
+//                Classifier clas = generateCoveringClassifier(state, setMWeight, moeadWeight);
+//                insertIntoPopulation(clas);
+////                deleteFromPopulation(state, moeadWeight);
+//                setMWeight.clear();
+//            }
         }
 
         assert (setMWeight.size() >= params.thetaMNA);
@@ -302,6 +318,7 @@ public class NXCS implements IBase {
         return setM;
     }
 
+    //TODO: issue: always return setM for the last weights¬
     public List<Classifier> generateWeightMatchSet(String state, List<double[]> MOEAD_Weights) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
         List<Classifier> setM = new ArrayList<Classifier>();
@@ -309,6 +326,7 @@ public class NXCS implements IBase {
             for (double[] weight : MOEAD_Weights) {
                 try {
                     setM = population.stream().filter(c -> (stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
+
                     if (setM.size() < params.thetaMNA) {
                         Classifier clas = generateCoveringClassifier(state, setM, weight);
                         insertIntoPopulation(clas);
@@ -316,7 +334,7 @@ public class NXCS implements IBase {
                         setM.clear();
                     }
                 } catch (Exception e) {
-//                    System.out.println("covering issue" + e);
+                    System.out.println("covering issue" + e);
                 }
             }
         }
@@ -470,11 +488,9 @@ public class NXCS implements IBase {
      */
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet) {
         s3++;
-        System.out.println("s3");
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
 
-//        System.out.println("covering");
         Classifier clas = new Classifier(params, state);
         Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
@@ -487,27 +503,14 @@ public class NXCS implements IBase {
 
     private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet, double[] moeadWeight) {
         s4++;
-//        System.out.println("s4");
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
-
-//        System.out.println("covering");
-        Classifier clas = new Classifier(params, state);
 
         Set<Integer> usedActions = matchSet.stream().filter(c -> Arrays.equals(c.weight_moead, moeadWeight)).map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
                 .collect(Collectors.toSet());
-        try {
-            clas.action = unusedActions.iterator().next();
-            clas.timestamp = timestamp;
-            clas.weight_moead = moeadWeight;
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
-        return clas;
+        return generateClassifier(params, state, unusedActions.iterator().next(), this.timestamp, moeadWeight);
     }
-
 
     /**
      * Generates a normalized prediction array from the given match set, based
@@ -864,7 +867,6 @@ public class NXCS implements IBase {
             //get normalised PA first
             double[] paretoPA = generateTotalPredictions_Norm(setM, moeadWeight);
             int max = getMaxIndex(paretoPA);
-            System.out.println(max);
             double[] paretoPA1 = generateTotalPredictions_Norm(setM, moeadWeight);
 
             double[] PA0 = generatePredictions(setM, 0);

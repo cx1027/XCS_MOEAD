@@ -843,4 +843,7 @@ public abstract class MazeBase implements Environment, ITrace {
     public int getCurrentFinalStateCount() {
         return this.finalStateCount;
     }
+    public List<Integer> getActions(){
+        return this.act;
+    }
 }

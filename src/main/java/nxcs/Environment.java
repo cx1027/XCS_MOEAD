@@ -59,4 +59,5 @@ public interface Environment {
 //    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1);
 
     public Point getCurrentLocation();
+    public List<Integer> getActions();
 }

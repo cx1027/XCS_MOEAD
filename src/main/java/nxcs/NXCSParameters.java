@@ -109,7 +109,7 @@ public class NXCSParameters {
 	/**
      * The threshold for the GA application in an action set.
      */
-	public int thetaGA = 25;
+	public int thetaGA = 600;
 
 	/**
 	 * The probability of applying crossover in an offspring classifier (chi in
