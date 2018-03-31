@@ -129,7 +129,7 @@ public class NXCS implements IBase {
         this.PA1 = generatePredictions(matchSet, 1);
         this.PAtotal = predictions;
         int act = getActionDeterministic(predictions);
-        logger.info(String.format("classify,%s,%f,%f,%f,%f,%d", env.getCurrentLocation(), predictions[0], predictions[1], predictions[2], predictions[3], act));
+//        logger.info(String.format("classify,%s,%f,%f,%f,%f,%d", env.getCurrentLocation(), predictions[0], predictions[1], predictions[2], predictions[3], act));
         return act;
     }
 
@@ -303,19 +303,20 @@ public class NXCS implements IBase {
 //    }
 
     public List<Classifier> generateMatchSetAllweightNoDeletion(String state) {
-        assert (state != null && state.length() == params.stateLength) : "Invalid state";
-        List<Classifier> setM = new ArrayList<Classifier>();
-        while (setM.size() == 0) {
-            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            if (setM.size() < params.thetaMNA) {
-//                Classifier clas = generateCoveringClassifier(state, setM);
-//                insertIntoPopulation(clas);
-//                setM.clear();
-            }
-        }
+//        assert (state != null && state.length() == params.stateLength) : "Invalid state";
+//        List<Classifier> setM = new ArrayList<Classifier>();
+//        while (setM.size() == 0) {
+//            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+//            if (setM.size() < params.thetaMNA) {
+////                Classifier clas = generateCoveringClassifier(state, setM);
+////                insertIntoPopulation(clas);
+////                setM.clear();
+//            }
+//        }
+//
+//        assert (setM.size() >= params.thetaMNA);
 
-        assert (setM.size() >= params.thetaMNA);
-        return setM;
+        return population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
     }
 
     //TODO: issue: always return setM for the last weights¬
