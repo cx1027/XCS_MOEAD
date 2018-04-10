@@ -1,6 +1,7 @@
 package nxcs;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 /**
@@ -215,6 +216,14 @@ public class Classifier implements Serializable {
         return vote;
     }
 
+//    double deleteVoteByError(double averageError, int thetaDel, double delta) {
+//        double vote = averageSize * numerosity;
+//        if (experience > thetaDel && ((error[0] + error[1]) / 2) / numerosity < delta * averageError) {
+//            return vote * averageError / (((fitnessArray[0] + fitnessArray[1]) / 2) / numerosity);
+//        }
+//        return vote;
+//    }
+
     /**
      * Returns whether this classifier has the requirements to subsume others
      *
@@ -254,7 +263,7 @@ public class Classifier implements Serializable {
      * @see NXCSParameters#e0
      */
     boolean doesSubsume(Classifier other, int thetaSub, double e0) {
-        return action == other.action && couldSubsume(thetaSub, e0) && isMoreGeneral(other);
+        return action == other.action && Arrays.equals(weight_moead, other.weight_moead) && couldSubsume(thetaSub, e0) && isMoreGeneral(other);
     }
 
     /**
