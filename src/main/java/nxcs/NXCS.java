@@ -710,8 +710,6 @@ public class NXCS implements IBase {
 
     // return max PA
     public double getMaxPrediction(double[] PA) {
-        // List b = Arrays.asList(PA);
-        // return (double) Collections.max(b);
         double max = Arrays.stream(PA).filter(d -> !Double.isNaN(d)).max().getAsDouble();
         return max;
     }
@@ -943,6 +941,11 @@ public class NXCS implements IBase {
                     }
                     clas.error[i] = clas.error[i]
                             + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) / clas.experience;
+                    //norm error
+
+                    clas.errorNor[i] = errorNor(clas.error[i], 50,0);
+
+
 
                 } else {
                     clas.prediction[i] = clas.prediction[i] + (P[i] - clas.prediction[i]) * params.beta;
@@ -950,6 +953,10 @@ public class NXCS implements IBase {
                         clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
                     }
                     clas.error[i] = clas.error[i] + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) * params.beta;
+                    //norm error
+
+
+                    clas.errorNor[i] = errorNor(clas.error[i], 50,0);
 
 
                 }
@@ -958,21 +965,26 @@ public class NXCS implements IBase {
         }
 
         // Update Fitness
+        //TODO:HOW TO SET PARAMS.E0??????
         Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-                cl -> (cl.error[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.error[0] / params.e0, -params.nu)));
+                cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
         double accuracySum0 = kappa0.entrySet().stream()
                 .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
         moead_actionSet.forEach(cl -> cl.fitnessArray[0] += params.beta
                 * (kappa0.get(cl) * cl.numerosity / accuracySum0 - cl.fitnessArray[0]));
 
         Map<Classifier, Double> kappa1 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-                cl -> (cl.error[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.error[1] / params.e0, -params.nu)));
+                cl -> (cl.errorNor[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[1] / params.e0, -params.nu)));
         double accuracySum1 = kappa1.entrySet().stream()
                 .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
         moead_actionSet.forEach(cl -> cl.fitnessArray[1] += params.beta
                 * (kappa1.get(cl) * cl.numerosity / accuracySum1 - cl.fitnessArray[1]));
 
-        moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] + cl.fitnessArray[1]) / 2);
+        //update fitness
+        int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
+        double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
+        moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] - averageFitness + cl.fitnessArray[1] - averageFitness) / 2);
+
 
         if (params.doActionSetSubsumption) {
             return actionSetSubsumption(moead_actionSet);
@@ -988,6 +1000,15 @@ public class NXCS implements IBase {
     // normalisaton for final reward
     public double rewardNor(double q, double max, double min) {
         return (q - min) / (max - min);
+    }
+
+    // normalisaton for error
+    public double errorNor(double e, double max, double min) {
+        if(e>50){
+            return 1.0;
+        }else{
+        return (e - min) / (max - min);
+        }
     }
 
     /**
@@ -1006,7 +1027,7 @@ public class NXCS implements IBase {
             List<Classifier> toRemove = new ArrayList<Classifier>();
             for (Classifier clas : setA) {
                 //TODO:SUBSUMPTION WHEN have equally weights
-                if (cl.isMoreGeneral(clas) && Arrays.equals(cl.weight_moead, clas.weight_moead) && cl.action==clas.action) {
+                if (cl.isMoreGeneral(clas) && Arrays.equals(cl.weight_moead, clas.weight_moead) && cl.action == clas.action) {
                     cl.numerosity = cl.numerosity + clas.numerosity;
                     toRemove.add(clas);
                 }

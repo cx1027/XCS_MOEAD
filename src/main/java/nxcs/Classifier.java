@@ -39,6 +39,10 @@ public class Classifier implements Serializable {
     public double[] error = new double[2];
 
     /**
+     * The reward error prediction of a classifier
+     */
+    public double[] errorNor = new double[2];
+    /**
      * The fitness of the classifier
      */
     public double[] fitnessArray = new double[2];
@@ -210,8 +214,8 @@ public class Classifier implements Serializable {
     //UPDATE DELETE VOTE
     double deleteVote(double averageFitness, int thetaDel, double delta) {
         double vote = averageSize * numerosity;
-        if (experience > thetaDel && ((fitnessArray[0] + fitnessArray[1]) / 2) / numerosity < delta * averageFitness) {
-            return vote * averageFitness / (((fitnessArray[0] + fitnessArray[1]) / 2) / numerosity);
+        if (experience > thetaDel && fitness / numerosity < delta * averageFitness) {
+            return vote * averageFitness / (fitness / numerosity);
         }
         return vote;
     }
@@ -232,7 +236,7 @@ public class Classifier implements Serializable {
      * @see NXCSParameters#e0
      */
     boolean couldSubsume(double thetaSub, double e0) {
-        return experience > thetaSub && ((error[0] + error[1]) / 2) < e0;
+        return experience > thetaSub && ((errorNor[0] + errorNor[1]) / 2) < e0;
     }
 
     /**
@@ -314,7 +318,7 @@ public class Classifier implements Serializable {
         StringBuilder build = new StringBuilder();
         build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience));
         for (int i = 0; i < error.length; i++) {//TODO:
-            build.append(String.format(", Fitness: %3.2f, Error: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], prediction[i]));
+            build.append(String.format(", fitnessArray: %3.2f, Error: %3.2f, ErrorNor: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], errorNor[i], prediction[i]));
         }
         build.append("]\n");
 

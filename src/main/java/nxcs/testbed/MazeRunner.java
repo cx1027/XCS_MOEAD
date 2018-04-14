@@ -26,8 +26,8 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
         mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 1200;
-        mp.resultInterval = 1200;
+        mp.finalStateUpperBound = 10000;
+        mp.resultInterval = 1000;
         mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
 
