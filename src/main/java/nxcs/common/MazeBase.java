@@ -758,9 +758,9 @@ public abstract class MazeBase implements Environment, ITrace {
 
                 while (!this.isEndOfProblem(this.getState())) {
                     String state = this.getState();
-                    if (stepCount > 20) {
-                        nxcs.getMatchsetFromClassifier(nxcs.matchSet(state, traceMoeadWeight).get(0));
-                    }
+//                    if (stepCount > 20) {
+//                        nxcs.getMatchsetFromClassifier(nxcs.matchSet(state, traceMoeadWeight).get(0));
+//                    }
                     int action = nxcs.classify(state, traceMoeadWeight);
                     logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s, action:%d", resetPoint, this.stepCount, this.getCurrentLocation(), action));
 
@@ -772,7 +772,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     this.move(action);
                     path.add(this.getCurrentLocation());
-                    logger.info(String.format("trace classify,%s,%f,%f,%f,%f,%f,%f,%d", this.getCurrentLocation(), traceMoeadWeight[0], traceMoeadWeight[1], nxcs.PAtotal[0], nxcs.PAtotal[1], nxcs.PAtotal[2], nxcs.PAtotal[3], action));
+//                    logger.info(String.format("trace classify,%s,%f,%f,%f,%f,%f,%f,%d", this.getCurrentLocation(), traceMoeadWeight[0], traceMoeadWeight[1], nxcs.PAtotal[0], nxcs.PAtotal[1], nxcs.PAtotal[2], nxcs.PAtotal[3], action));
 
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
@@ -820,7 +820,7 @@ public abstract class MazeBase implements Environment, ITrace {
             for (int a : this.act) {
                 List<Classifier> Cweight = C.stream().filter(x -> Arrays.equals(x.weight_moead, w) && x.action == a).collect(Collectors.toList());
                 if (Cweight.size() > 1) {
-                    logger.info("more than one classifier in this weight + action");
+                    logger.debug("more than one classifier in this weight + action");
                     //TODO: sort by fitness and retain the one with highest fitness
                     Collections.sort(Cweight, new Comparator<Classifier>() {
                         @Override
@@ -830,10 +830,12 @@ public abstract class MazeBase implements Environment, ITrace {
                     });
 //                    throw new Exception("more then one classifier in this weight + action");
                 }
-                try {
-                    ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
-                } catch (Exception e) {
-                    System.out.println(e);
+                if (Cweight.size() > 0) {
+                    try {
+                        ret.add(new ActionPareto(new Qvector(Cweight.get(0).prediction[0], Cweight.get(0).prediction[1]), 0));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -841,7 +843,7 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     private double getHyperVolumn(List<ActionPareto> paretos) {
-        return hyperVolumnCalculator.calcHyperVolumn(paretoCalculator.getPareto(paretos), new Qvector(-10, -10));
+        return paretos.size() == 0 ? 0 : hyperVolumnCalculator.calcHyperVolumn(paretoCalculator.getPareto(paretos), new Qvector(-10, -10));
     }
 
     public boolean isTraceConditionMeet() {
