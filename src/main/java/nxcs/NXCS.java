@@ -1005,7 +1005,7 @@ public class NXCS implements IBase {
 
     // normalisaton for error
     public double errorNor(double e, double max, double min) {
-        if(e>50){
+        if(e>max){
             return 1.0;
         }else{
         return (e - min) / (max - min);
