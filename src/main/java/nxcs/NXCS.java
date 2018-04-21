@@ -239,7 +239,8 @@ public class NXCS implements IBase {
         List<Classifier> setMWeight = new ArrayList<Classifier>();
         while (setMWeight.size() == 0) {
 //            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            setMWeight = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
+            setMWeight = filterSetConditionWeight(state,openLocation, mpParams.method, moeadWeight);
+//                    population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
             boolean isUpdated = false;
             for (Integer action : env.getActions()) {
                 List<Classifier> setMAct = setMWeight.stream().filter(
@@ -254,7 +255,8 @@ public class NXCS implements IBase {
             }
             //regenerate matchset after inserted new classifiers
             if (isUpdated)
-                setMWeight = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
+                setMWeight = filterSetConditionWeight(state,openLocation,mpParams.method, moeadWeight);
+//                        population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
 
 //            if (setMWeight.size() < params.thetaMNA) {
 //                Classifier clas = generateCoveringClassifier(state, setMWeight, moeadWeight);
@@ -327,7 +329,8 @@ public class NXCS implements IBase {
         while (setM.size() == 0) {
             for (double[] weight : MOEAD_Weights) {
                 try {
-                    setM = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
+                    setM = filterSetConditionWeight(state,openLocation, mpParams.method, weight);
+//                            population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
 
                     if (setM.size() < params.thetaMNA) {
                         Classifier clas = generateCoveringClassifier(state, openLocation, setM, weight);
