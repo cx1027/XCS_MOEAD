@@ -5,6 +5,7 @@ import nxcs.distance.DistanceCalculatorUtil;
 import nxcs.moead.MOEAD;
 import nxcs.moead.Sorting;
 import nxcs.common.IParetoCalculator;
+import nxcs.common.MazeParameters;
 
 import java.awt.*;
 import java.util.*;
@@ -26,6 +27,8 @@ public class NXCS implements IBase {
      * The parameters of this system.
      */
     private final NXCSParameters params;
+
+    private final MazeParameters mpParams;
 
     /**
      * The Environment the system is acting on
@@ -81,7 +84,7 @@ public class NXCS implements IBase {
      * @param _env    The environment this system is to operate on
      * @param _params The parameters this system is to use
      */
-    public NXCS(Environment _env, NXCSParameters _params, IParetoCalculator paretoCalculator) {
+    public NXCS(Environment _env, NXCSParameters _params, IParetoCalculator paretoCalculator, MazeParameters mp) {
         if (_env == null)
             throw new IllegalArgumentException("Cannot operate on null environment");
         if (_params == null)
@@ -92,6 +95,7 @@ public class NXCS implements IBase {
         this.paretoCalculator = paretoCalculator;
         population = new ArrayList<Classifier>();
         timestamp = 0;
+        mpParams=mp;
     }
 
     /**
@@ -111,20 +115,21 @@ public class NXCS implements IBase {
      */
 
 
-    public List<Classifier> matchSet(String state, double[] weight) {
-        return population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))
-                .collect(Collectors.toList());
-    }
+//    public List<Classifier> matchSet(String state, double[] weight) {
+//        return population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))
+//                .collect(Collectors.toList());
+//    }
 
 
-    public int classify(String state, double[] weight) {
+    public int classify(String state,Point openLocation, double[] moeadWeight,int method) {
         if (state.length() != params.stateLength)
             throw new IllegalArgumentException(
                     String.format("The given state (%s) is not of the correct length", state));
         //TODO: state match and weight match
-        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))
-                .collect(Collectors.toList());
-        double[] predictions = generateTotalPredictions_Norm(matchSet, weight);
+//        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))
+//                .collect(Collectors.toList());
+        List<Classifier> matchSet = filterSetConditionWeight(state,openLocation,method, moeadWeight);
+        double[] predictions = generateTotalPredictions_Norm(matchSet, moeadWeight);
         this.PA0 = generatePredictions(matchSet, 0);
         this.PA1 = generatePredictions(matchSet, 1);
         this.PAtotal = predictions;
@@ -133,12 +138,6 @@ public class NXCS implements IBase {
         return act;
     }
 
-    public double getSelectPA(int action, String state) {
-        List<Classifier> matchSet = population.stream().filter(c -> stateMatches(c.condition, state))
-                .collect(Collectors.toList());
-        double[] predictions_reward = generatePredictions(matchSet, 1);
-        return predictions_reward[action];
-    }
 
     /**
      * calculate hyper volume of current state
@@ -177,15 +176,15 @@ public class NXCS implements IBase {
     /**
      * Runs a single iteration of the learning process of this NXCS instance
      */
-    public void runIteration(int finalStateCount, String previousState, double[] weight, double firstreward, List<double[]> MOEAD_Weights) {
+    public void runIteration(int finalStateCount, String previousState, Point previousPoint, double[] weight, double firstreward, List<double[]> MOEAD_Weights, int method) {
         // action
         int action = INVALID_ACTION;
 
         /* form [M] */
-        List<Classifier> matchSet = generateWeightMatchSet(previousState, MOEAD_Weights);
+        List<Classifier> matchSet = generateWeightMatchSet(previousState,previousPoint, MOEAD_Weights);
         /* select a */
         if (XienceMath.randomInt(params.numActions) <= 1) {
-            double[] predictions = generateTotalPredictions_Norm(matchSet, weight);
+            double[] predictions = generateTotalPredictions_Norm(matchSet, MOEAD_Weights.get(0));
             // select best actiton, not just explore
             action = getActionDeterministic(predictions);
         } else {
@@ -202,14 +201,15 @@ public class NXCS implements IBase {
         }
         /* get current state */
         String curState = env.getState();
+        Point  curPoint=env.getPoint();
 
         /* if previous State!null, update [A]-1 and run ga */
         if (previousState != null) {
             /* updateSet include P calculation */
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
-                List<Classifier> setA_W = updateSet(previousState, curState, action, reward, MOEAD_Weights.get(w), params.groupSize);
-                runGA(setA_W, previousState, MOEAD_Weights.get(w));
+                List<Classifier> setA_W = updateSet(previousState, curState, previousPoint,curPoint, action, reward, MOEAD_Weights.get(w), params.groupSize);
+                runGA(setA_W, previousState,previousPoint, MOEAD_Weights.get(w));
             }
         }
 
@@ -233,28 +233,28 @@ public class NXCS implements IBase {
      * @return The set of classifiers that match the given state
      * @see NXCSParameters#thetaMNA
      */
-    public List<Classifier> generateMatchSet(String state, double[] moeadWeight) {
+    public List<Classifier> generateMatchSet(String state,Point openLocation, double[] moeadWeight) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
 //        List<Classifier> setM = new ArrayList<Classifier>();
         List<Classifier> setMWeight = new ArrayList<Classifier>();
         while (setMWeight.size() == 0) {
 //            setM = population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
-            setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList());
+            setMWeight = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
             boolean isUpdated = false;
             for (Integer action : env.getActions()) {
                 List<Classifier> setMAct = setMWeight.stream().filter(
                         c -> c.action == action).collect(Collectors.toList());
 
                 if (setMAct.size() < 1) {
-                    Classifier clas = generateClassifier(params, state, action, timestamp, moeadWeight);
+                    Classifier clas = generateClassifier(params, state,openLocation, action, timestamp, moeadWeight);
                     insertIntoPopulation(clas);
-                    deleteFromPopulation();
+                    deleteFromPopulation(mpParams.method);
                     isUpdated = isUpdated || true;
                 }
             }
             //regenerate matchset after inserted new classifiers
             if (isUpdated)
-                setMWeight = population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList());
+                setMWeight = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList());
 
 //            if (setMWeight.size() < params.thetaMNA) {
 //                Classifier clas = generateCoveringClassifier(state, setMWeight, moeadWeight);
@@ -302,7 +302,7 @@ public class NXCS implements IBase {
 //        return setM;
 //    }
 
-    public List<Classifier> generateMatchSetAllweightNoDeletion(String state) {
+    public List<Classifier> generateMatchSetAllweightNoDeletion(String state, Point openLocation,int method) {
 //        assert (state != null && state.length() == params.stateLength) : "Invalid state";
 //        List<Classifier> setM = new ArrayList<Classifier>();
 //        while (setM.size() == 0) {
@@ -316,22 +316,23 @@ public class NXCS implements IBase {
 //
 //        assert (setM.size() >= params.thetaMNA);
 
-        return population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+//        return population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList());
+        return filterSetCondition(state,openLocation,method);
     }
 
     //TODO: issue: always return setM for the last weights¬
-    public List<Classifier> generateWeightMatchSet(String state, List<double[]> MOEAD_Weights) {
+    public List<Classifier> generateWeightMatchSet(String state, Point openLocation, List<double[]> MOEAD_Weights) {
         assert (state != null && state.length() == params.stateLength) : "Invalid state";
         List<Classifier> setM = new ArrayList<Classifier>();
         while (setM.size() == 0) {
             for (double[] weight : MOEAD_Weights) {
                 try {
-                    setM = population.stream().filter(c -> (stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
+                    setM = population.stream().filter(c -> (pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation) && Arrays.equals(c.weight_moead, weight))).collect(Collectors.toList());
 
                     if (setM.size() < params.thetaMNA) {
-                        Classifier clas = generateCoveringClassifier(state, setM, weight);
+                        Classifier clas = generateCoveringClassifier(state, openLocation, setM, weight);
                         insertIntoPopulation(clas);
-                        deleteFromPopulation();
+                        deleteFromPopulation(mpParams.method);
                         setM.clear();
                     }
                 } catch (Exception e) {
@@ -380,7 +381,7 @@ public class NXCS implements IBase {
      * deleted proportional to the fitness of that classifier. Reference: Page
      * 14 'An Algorithmic Description of XCS'
      */
-    private void deleteFromPopulation() {
+    private void deleteFromPopulation(int method) {
         s6++;
 
         int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
@@ -438,17 +439,25 @@ public class NXCS implements IBase {
 //                System.out.println(String.format("choide numerisity--:%s", choice.toString()));
                 continue;
             }
-            for (String tstate : replace(choice.condition)) {
-                List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
-                        && Arrays.equals(c.weight_moead, choice.weight_moead)
-                        && c.action == choice.action)
-                        .collect(Collectors.toList());
 
-                if (actionSet.size() > 1) {
-                    population.remove(choice);
-                    deletedFlag = true;
+            //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
+            if(method==0) {
+                //0:pointMatch
+                population.remove(choice);
+
+            }else{
+                for (String tstate : replace(choice.condition)) {
+                    List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
+                            && Arrays.equals(c.weight_moead, choice.weight_moead)
+                            && c.action == choice.action)
+                            .collect(Collectors.toList());
+
+                    if (actionSet.size() > 1) {
+                        population.remove(choice);
+                        deletedFlag = true;
 //                    System.out.println(String.format("delete:%s", choice.toString()));
-                    break;
+                        break;
+                    }
                 }
             }
 
@@ -502,7 +511,7 @@ public class NXCS implements IBase {
         return clas;
     }
 
-    private Classifier generateCoveringClassifier(String state, List<Classifier> matchSet, double[] moeadWeight) {
+    private Classifier generateCoveringClassifier(String state, Point openLocation, List<Classifier> matchSet, double[] moeadWeight) {
         s4++;
         assert (state != null && matchSet != null) : "Invalid parameters";
         assert (state.length() == params.stateLength) : "Invalid state length";
@@ -510,7 +519,7 @@ public class NXCS implements IBase {
         Set<Integer> usedActions = matchSet.stream().filter(c -> Arrays.equals(c.weight_moead, moeadWeight)).map(c -> c.action).distinct().collect(Collectors.toSet());
         Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
                 .collect(Collectors.toSet());
-        return generateClassifier(params, state, unusedActions.iterator().next(), this.timestamp, moeadWeight);
+        return generateClassifier(params, state,openLocation, unusedActions.iterator().next(), this.timestamp, moeadWeight);
     }
 
     /**
@@ -832,12 +841,12 @@ public class NXCS implements IBase {
      * @see Classifier#fitness
      * @see Classifier#omega
      */
-    private List<Classifier> updateSet(String previousState, String currentState, int action, ActionPareto reward, double[] moeadWeight, int groupSize) {
+    private List<Classifier> updateSet(String previousState, String currentState,Point previousPoint, Point currentPoint, int action, ActionPareto reward, double[] moeadWeight, int groupSize) {
         /*
          * select matchset according to moeadWeight
          *
          * */
-        List<Classifier> previousMatchSet = generateMatchSet(previousState, moeadWeight);
+        List<Classifier> previousMatchSet = generateMatchSet(previousState,previousPoint, moeadWeight);
 
         /*
          * Calculate P according to weights
@@ -861,12 +870,12 @@ public class NXCS implements IBase {
             // consider weights to for getMinPrediction and getMaxPrediction
 
             //weighted sum
-            List<Classifier> setM = generateMatchSet(currentState, moeadWeight);
+            List<Classifier> setM = generateMatchSet(currentState,currentPoint, moeadWeight);
 
             //get normalised PA first
             double[] paretoPA = generateTotalPredictions_Norm(setM, moeadWeight);
             int max = getMaxIndex(paretoPA);
-            double[] paretoPA1 = generateTotalPredictions_Norm(setM, moeadWeight);
+//            double[] paretoPA1 = generateTotalPredictions_Norm(setM, moeadWeight);
 
             double[] PA0 = generatePredictions(setM, 0);
             double[] PA1 = generatePredictions(setM, 1);
@@ -903,9 +912,9 @@ public class NXCS implements IBase {
         if (moead_actionSet.size() == 0) {
             System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
 //            generateCoveringClassifierbyWeight(previousState, moeadWeight);
-            Classifier clas = generateClassifier(params, previousState, action, 0, moeadWeight);
+            Classifier clas = generateClassifier(params, previousState,previousPoint, action, 0, moeadWeight);
             insertIntoPopulation(clas);
-            deleteFromPopulation();
+            deleteFromPopulation(mpParams.method);
 
             moead_actionSet.add(clas);
         }//calculate classifier distance by weight dimension
@@ -1053,7 +1062,7 @@ public class NXCS implements IBase {
      * @see NXCSParameters#chi
      * @see NXCSParameters#doGASubsumption
      */
-    private void runGA(List<Classifier> setA, String state, double[] moeadWeight) {
+    private void runGA(List<Classifier> setA, String state,Point openlocation, double[] moeadWeight) {
         assert (setA != null && state != null) : "Invalid parameters";
         // assert(setA.size() > 0) : "No action set";
         if (setA.size() == 0)
@@ -1079,6 +1088,7 @@ public class NXCS implements IBase {
             //crossover
             if (XienceMath.random() < params.crossoverRate) {
                 crossover(child1, child2);
+                intCrossover(child1, child2,openlocation);
                 for (int i = 0; i < 2; i++) {
                     child1.prediction[i] = child2.prediction[i] = (parent1.prediction[i] + parent2.prediction[i]) / 2;
                     child1.error[i] = child2.error[i] = 0.25 * (parent1.error[i] + parent2.error[i]) / 2;
@@ -1091,6 +1101,7 @@ public class NXCS implements IBase {
             for (Classifier child : children) {
                 //mutation
                 child.mutate(state, params.mutationRate, params.numActions);
+                child.mutateInt(params.mutationRate);
 
                 //TODO:evaluation of child
                 moead.evaluateAndUpdate(child, moead_actionSet, moeadWeight);
@@ -1108,7 +1119,7 @@ public class NXCS implements IBase {
                 } else {
                     insertIntoPopulation(child);
                 }
-                deleteFromPopulation();
+                deleteFromPopulation(mpParams.method);
             }
         }
     }
@@ -1151,8 +1162,8 @@ public class NXCS implements IBase {
         return clas;
     }
 
-    public Classifier generateClassifier(NXCSParameters params, String state, int act, int timestamp, double[] weight) {
-        Classifier clas = new Classifier(params, state);
+    public Classifier generateClassifier(NXCSParameters params, String state, Point openLocation, int act, int timestamp, double[] weight) {
+        Classifier clas = new Classifier(params, state, openLocation);
 //				Set<Integer> usedActions = matchSet.stream().map(c -> c.action).distinct().collect(Collectors.toSet());
 //				Set<Integer> unusedActions = IntStream.range(0, params.numActions).filter(i -> !usedActions.contains(i)).boxed()
 //						.collect(Collectors.toSet());
@@ -1183,6 +1194,16 @@ public class NXCS implements IBase {
             e.printStackTrace();
         }
         return x;
+    }
+
+    private boolean pointMatches(double xaxis_D, double xaxis_U, double yaxis_D, double yaxis_U, Point currentLocation) {
+        assert (xaxis_D > -100 && xaxis_U > -100 && yaxis_D > -100 && yaxis_U > -100 ) : "Invalid condition";
+        assert (currentLocation != null) : "Invalid state";
+        if (xaxis_D <= currentLocation.getX() && currentLocation.getX()<= xaxis_U && yaxis_D <= currentLocation.getY() && currentLocation.getY()<= yaxis_U){
+            return true;
+        }else{
+            return false;
+        }
     }
 
 
@@ -1228,20 +1249,130 @@ public class NXCS implements IBase {
     }
 
 
-    public List<Classifier> getMatchsetFromClassifier(Classifier cl) {
-        List<Classifier> classifiers = new ArrayList<Classifier>();
+    //swap uper lower boundary
+    private void intCrossover(Classifier child1, Classifier child2, Point openlocation) {
+        assert (child1 != null && child2 != null) : "Cannot crossover null child";
 
-        for (String tstate : replace(cl.condition)) {
-            List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
-                    && Arrays.equals(c.weight_moead, cl.weight_moead)
-                    && c.action == cl.action)
-                    .collect(Collectors.toList());
-            classifiers.addAll(actionSet);
-            actionSet.clear();
+        int mark = XienceMath.randomInt(3);
+        swapBound(child1,child2,mark);
+        boolean isValid=verifyValidBound(openlocation,child1,child2);
+        if(isValid==false){
+            swapBound(child1,child2,mark);
         }
-        return classifiers;
+
+
     }
 
+    private boolean verifyValidBound(Point openlocation,Classifier cl1, Classifier cl2) {
+        ArrayList<Classifier> childList = new ArrayList<Classifier>();
+        childList.add(cl1);
+        childList.add(cl2);
+        boolean validBound= true;
+        for(Classifier cl:childList){
+              boolean temp=validBound = pointMatches(cl.xaxis_D, cl.xaxis_U, cl.yaxis_D, cl.yaxis_U, openlocation);
+              if(temp==false){
+                  validBound=false;
+              }
+        }
+        return validBound;
+    }
+
+    private void swapBound(Classifier child1, Classifier child2, int mark){
+        if (mark== 0) {
+            //change uper
+            double tmp = child1.xaxis_D;
+            child1.xaxis_D = child2.xaxis_D;
+            child2.xaxis_D = tmp;
+        } else if(mark==1) {
+            //change lower
+            double tmp = child1.xaxis_U;
+            child1.xaxis_U = child2.xaxis_U;
+            child2.xaxis_U = tmp;
+        }else if(mark==2) {
+            //change lower
+            double tmp = child1.yaxis_U;
+            child1.yaxis_U = child2.yaxis_U;
+            child2.yaxis_U = tmp;
+        }else {
+            //change lower
+            double tmp = child1.yaxis_D;
+            child1.yaxis_D = child2.yaxis_D;
+            child2.yaxis_D = tmp;
+        }
+    }
+
+
+//    public List<Classifier> getMatchsetFromClassifier(Classifier cl) {
+//        List<Classifier> classifiers = new ArrayList<Classifier>();
+//
+//        for (String tstate : replace(cl.condition)) {
+//            List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
+//                    && Arrays.equals(c.weight_moead, cl.weight_moead)
+//                    && c.action == cl.action)
+//                    .collect(Collectors.toList());
+//            classifiers.addAll(actionSet);
+//            actionSet.clear();
+//        }
+//        return classifiers;
+//    }
+
+    public List<Classifier> filterSetConditionWeight(String state, Point openLocation, int method, double[] moeadWeight) {
+        //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
+        ArrayList<Classifier> setM= new ArrayList<Classifier>();
+        if(method==0){
+            //pointMatch
+            setM.addAll(population.stream().filter(c -> pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList()));
+        } else if(method==1){
+            //stateMatch
+            setM.addAll(population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList()));
+        }else if(method==2){
+            //bothMatch
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)&&pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList()));
+        }else if(method==3){
+            //one of state or point match
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)||pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList()));
+        }
+        return setM;
+    }
+
+
+    public List<Classifier> filterSetCondition(String state, Point openLocation, int method) {
+        //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
+        ArrayList<Classifier> setM= new ArrayList<Classifier>();
+        if(method==0){
+            //pointMatch
+            setM.addAll(population.stream().filter(c -> pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)).collect(Collectors.toList()));
+        } else if(method==1){
+            //stateMatch
+            setM.addAll(population.stream().filter(c -> stateMatches(c.condition, state)).collect(Collectors.toList()));
+        }else if(method==2){
+            //bothMatch
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)&&pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation))).collect(Collectors.toList()));
+        }else if(method==3){
+            //one of state or point match
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)||pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation))).collect(Collectors.toList()));
+        }
+        return setM;
+    }
+
+    public List<Classifier> filterSetConditionWeightAct(String state, Point openLocation, int method, double[] moeadWeight, int act) {
+        //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
+        ArrayList<Classifier> setM= new ArrayList<Classifier>();
+        if(method==0){
+            //pointMatch
+            setM.addAll(population.stream().filter(c -> pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList()));
+        } else if(method==1){
+            //stateMatch
+            setM.addAll(population.stream().filter(c -> stateMatches(c.condition, state) && Arrays.equals(c.weight_moead, moeadWeight)).collect(Collectors.toList()));
+        }else if(method==2){
+            //bothMatch
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)&&pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList()));
+        }else if(method==3){
+            //one of state or point match
+            setM.addAll(population.stream().filter(c -> (stateMatches(c.condition, state)||pointMatches(c.xaxis_D, c.xaxis_U, c.yaxis_D, c.yaxis_U, openLocation)&& Arrays.equals(c.weight_moead, moeadWeight))).collect(Collectors.toList()));
+        }
+        return setM;
+    }
 
     private int getItemIndex(Classifier[] items, double[] weights) {
         return 0;

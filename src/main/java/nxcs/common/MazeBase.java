@@ -136,7 +136,7 @@ public abstract class MazeBase implements Environment, ITrace {
                     //how many times a same setting run, then to avg for the result
                     //totalCalcTimes:how many runs want to avg, here set 1 to ignor this loop
                     for (int trailIndex = 0; trailIndex < this.mp.totalTrailCount; trailIndex++) {
-                        NXCS nxcs = new NXCS(this, this.np, this.paretoCalculator);
+                        NXCS nxcs = new NXCS(this, this.np, this.paretoCalculator, mp);
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
@@ -161,7 +161,7 @@ public abstract class MazeBase implements Environment, ITrace {
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
                             Point from = this.getCurrentLocation();
                             //run each step
-                            nxcs.runIteration(finalStateCount, this.getState(), targetWeight, this.np.obj1[0], moeadObj.getWeights());
+                            nxcs.runIteration(finalStateCount, this.getState(),this.getPoint(), targetWeight, this.np.obj1[0], moeadObj.getWeights(), mp.method);
                             logger.debug(String.format("Trail:%d, finalStateCount:%d, [%s]=>[%s]", trailIndex, finalStateCount, from, this.getCurrentLocation()));
 
 //                            if (finalStateCount > 2497) {
@@ -184,7 +184,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
 
 
-                                this.trace(moeadObj, nxcs, stepStatsLogger, trailIndex, targetWeight, this.np.obj1[0], finalStateCount);
+                                this.trace(moeadObj, nxcs, stepStatsLogger, trailIndex, targetWeight, this.np.obj1[0], finalStateCount,mp.method);
                                 this.resetPosition();
 
                                 logged = true;
@@ -195,7 +195,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                                 this.np.obj1[0], 0, this.np.N));
                             }//endof log
                         } // endof z loop
-                        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, moeadObj.weights, targetWeight[0]);
+                        this.printOpenLocationClassifiers(this.finalStateCount, nxcs, moeadObj.weights, targetWeight[0], mp.method);
 
                         //write result to csv
 //                        stepLogger.writeLogAndCSVFiles(
@@ -305,7 +305,8 @@ public abstract class MazeBase implements Environment, ITrace {
         return getStringForState(x, y);
     }
 
-    public Point getxy() {
+
+    public Point getPoint() {
         return new Point(x, y);
     }
 
@@ -327,7 +328,7 @@ public abstract class MazeBase implements Environment, ITrace {
         for (Point p : this.openLocations) {
             this.resetToSamePosition(p);
             String startState = this.getState();
-            ArrayList<StepSnapshot> trc = GetTrainingPAResultInCSV(exp_repeat, timeStamp, nxcs, weight, first_reward);
+            ArrayList<StepSnapshot> trc = GetTrainingPAResultInCSV(exp_repeat, timeStamp, nxcs, weight, first_reward, mp.method);
             // ArrayList<StepSnapshot> trc = trace.traceStart(startState, nxcs);
             trc.stream().forEach(x -> x.setTimestamp(timeStamp));
             locStats.add(trc);
@@ -335,12 +336,12 @@ public abstract class MazeBase implements Environment, ITrace {
         return locStats;
     }
 
-    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, List<double[]> weightList, double obj_r1) {
+    public void printOpenLocationClassifiers(int timestamp, NXCS nxcs, List<double[]> weightList, double obj_r1, int method) {
         logger.error("R1 is:" + obj_r1 + " R2 is:" + (1000 - obj_r1));
 
         for (Point p : this.openLocations) {
             logger.error(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
-            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(getStringForState((int) p.getX(), (int) p.getY()));
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(getStringForState((int) p.getX(), (int) p.getY()),getPoint(),method);
             for (double[] weight : weightList) {
                 logger.error("weight0:" + weight[0] + " weight1:" + weight[1]);
                 List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
@@ -501,14 +502,14 @@ public abstract class MazeBase implements Environment, ITrace {
 //        return PAresult;
 //    }
 
-    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1) {
+    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1, int method) {
 
         ArrayList<StepSnapshot> PAresult = new ArrayList<StepSnapshot>();
 
 
         for (Point p : this.openLocations) {
 
-            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(p.x, p.y));
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(p.x, p.y), this.getPoint(), method);
             double[] PA1 = nxcs.generatePredictions(C, 0);
 
             double[] PA2 = nxcs.generatePredictions(C, 1);
@@ -659,8 +660,10 @@ public abstract class MazeBase implements Environment, ITrace {
         logger.error("===========Final States===============\t:" + finalStates);
         logger.error("===========Position Rewards===========\t" + gson.toJson(this.positionRewards));
 
-        if (checkOpenLocationDuplicateEncoding()) {
-            throw new IOException("FATAL Error: duplicate open locations!");
+        if(mp.method!=0) {
+            if (checkOpenLocationDuplicateEncoding()) {
+                throw new IOException("FATAL Error: duplicate open locations!");
+            }
         }
         return this;
     }
@@ -727,7 +730,7 @@ public abstract class MazeBase implements Environment, ITrace {
         return dup;
     }
 
-    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, int trailIndex, double[] targetWeight, double objective, int timestamp) throws Exception {
+    public ArrayList<StepSnapshot> trace(MOEAD moeadObj, NXCS nxcs, StepStatsLogger stepStatsLogger, int trailIndex, double[] targetWeight, double objective, int timestamp, int method) throws Exception {
         ArrayList<StepSnapshot> testStats = new ArrayList<StepSnapshot>();
 
 
@@ -761,7 +764,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                    if (stepCount > 20) {
 //                        nxcs.getMatchsetFromClassifier(nxcs.matchSet(state, traceMoeadWeight).get(0));
 //                    }
-                    int action = nxcs.classify(state, traceMoeadWeight);
+                    int action = nxcs.classify(state,this.getPoint(), traceMoeadWeight, method);
                     logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s, action:%d", resetPoint, this.stepCount, this.getCurrentLocation(), action));
 
                     //TODO:return the PA1[action]
@@ -815,7 +818,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
     private ArrayList<ActionPareto> getParetoByState(NXCS nxcs, Point location, List<double[]> weights) throws Exception {
         ArrayList<ActionPareto> ret = new ArrayList<ActionPareto>();
-        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y));
+        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y),this.getPoint(),mp.method);
         for (double[] w : weights) {
             for (int a : this.act) {
                 List<Classifier> Cweight = C.stream().filter(x -> Arrays.equals(x.weight_moead, w) && x.action == a).collect(Collectors.toList());

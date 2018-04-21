@@ -13,6 +13,7 @@ public class MazeParameters {
     public String mazeFile;
     public String rewardFile;
     public boolean logLowerFinalState;
+    public int method;
 
     public String getFileTimestampFormat() {
         return fileTimestampFormat;
@@ -26,6 +27,8 @@ public class MazeParameters {
         this.fileTimestampFormat = dateformatyyyyMMdd.format(new Date());
         this.resultInterval = 600;
         this.numOfChartBars = 20;
+        //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
+        this.method = 0;
     }
 
     @Override

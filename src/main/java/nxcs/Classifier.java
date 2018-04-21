@@ -1,5 +1,6 @@
 package nxcs;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -79,12 +80,22 @@ public class Classifier implements Serializable {
      */
     public String condition;
 
-    /*
-        * Weights from MOEAD
-        * */
+    public double[] conditionList = {0,0,0,0};
+
+
     public double[] weight_moead;
+    public double xaxis_D;
+    public double yaxis_D;
+    public double xaxis_U;
+    public double yaxis_U;
 
 
+
+
+
+    /*
+            * Weights from MOEAD
+            * */
     public double[] getWeight_moead() {
         return weight_moead;
     }
@@ -170,6 +181,60 @@ public class Classifier implements Serializable {
         condition = build.toString();
     }
 
+
+    public Classifier(NXCSParameters params, String state, Point openlocation) {
+        id = GLOBAL_ID;
+        GLOBAL_ID++;
+
+        //Set up the default settings
+        action = XienceMath.randomInt(params.numActions);
+        prediction[0] = params.initialPrediction; //TODO:CHECK
+        error[0] = params.initialError;
+        fitnessArray[0] = params.initialFitness;
+        prediction[1] = params.initialPrediction;
+        error[1] = params.initialError;
+        fitnessArray[1] = params.initialFitness;
+        fitness = params.initialFitness;
+        omega = params.initialOmega;
+        experience = 0;
+        timestamp = 0;
+        averageSize = 1;
+        numerosity = 1;
+
+        //Build from the state
+        StringBuilder build = new StringBuilder();
+        for (int i = 0; i < params.stateLength; i++) {
+            if (XienceMath.random() < params.pHash) {
+                build.append('#');
+            } else {
+                build.append(state.charAt(i));
+            }
+        }
+        condition = build.toString();
+
+        xaxis_U=openlocation.getX()+rangeX();
+        xaxis_D=openlocation.getX()-rangeX();
+        yaxis_U=openlocation.getY()+rangeY();
+        yaxis_D=openlocation.getY()-rangeY();
+
+        if(Double.isNaN((this.fitnessArray[1]))){
+            System.out.println("aaa");
+        }
+
+    }
+
+    public double rangeX(){
+        double rX=0;
+        rX=10*0.05*XienceMath.random();
+        return rX;
+    }
+
+    public double rangeY(){
+        double rY=0;
+        rY=11*0.05*XienceMath.random();
+        return rY;
+    }
+
     /**
      * Mutates this classifier based on the given values, reconstructing the condition
      * based on the given state and possibly changing the action.
@@ -199,6 +264,30 @@ public class Classifier implements Serializable {
 
         if (XienceMath.random() < mutationRate) {
             action = XienceMath.randomInt(numActions);
+        }
+    }
+
+    void mutateInt(double mutationRate){
+        int mark = XienceMath.randomInt(7);
+        if (XienceMath.random() < mutationRate) {
+            if (mark== 0) {
+                this.xaxis_D+=rangeX();
+            } else if(mark==1) {
+                this.xaxis_D-=rangeX();
+            }else if(mark==2) {
+                this.xaxis_U+=rangeX();
+            }else if(mark==3) {
+                this.xaxis_U-=rangeX();
+            }else if(mark==4) {
+                this.yaxis_D+=rangeY();
+            } else if(mark==5) {
+                this.yaxis_D-=rangeY();
+            }else if(mark==6) {
+                this.yaxis_U+=rangeY();
+            }else if(mark==7) {
+                this.yaxis_U-=rangeY();
+            }
+            //dont have update action as action already mutation with condition
         }
     }
 
@@ -316,7 +405,7 @@ public class Classifier implements Serializable {
      */
     public String toString() {
         StringBuilder build = new StringBuilder();
-        build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience));
+        build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d, bound:%f,%f,%f,%f", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience,xaxis_D,xaxis_U,yaxis_D,yaxis_U));
         for (int i = 0; i < error.length; i++) {//TODO:
             build.append(String.format(", fitnessArray: %3.2f, Error: %3.2f, ErrorNor: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], errorNor[i], prediction[i]));
         }
