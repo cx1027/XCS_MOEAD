@@ -75,7 +75,7 @@ public class MazeRunner {
 
         try {
             //initialize and run
-            mp.mazeFile = "data/DSTpart.txt";
+            mp.mazeFile = "data/DSTorigin.txt";
             mp.rewardFile = "rewards/DSTfullUpdate.json";
             maze = new dst_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();

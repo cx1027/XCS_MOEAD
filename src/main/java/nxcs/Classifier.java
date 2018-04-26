@@ -80,17 +80,14 @@ public class Classifier implements Serializable {
      */
     public String condition;
 
-    public double[] conditionList = {0,0,0,0};
+    public double[] conditionList = {0, 0, 0, 0};
 
 
     public double[] weight_moead;
-    public double xaxis_D;
-    public double yaxis_D;
+    public double xaxis_L;
+    public double yaxis_L;
     public double xaxis_U;
     public double yaxis_U;
-
-
-
 
 
     /*
@@ -212,26 +209,26 @@ public class Classifier implements Serializable {
         }
         condition = build.toString();
 
-        xaxis_U=openlocation.getX()+rangeX();
-        xaxis_D=openlocation.getX()-rangeX();
-        yaxis_U=openlocation.getY()+rangeY();
-        yaxis_D=openlocation.getY()-rangeY();
+        xaxis_U = openlocation.getX() + rangeX();
+        xaxis_L = openlocation.getX() - rangeX();
+        yaxis_U = openlocation.getY() + rangeY();
+        yaxis_L = openlocation.getY() - rangeY();
 
-        if(Double.isNaN((this.fitnessArray[1]))){
+        if (Double.isNaN((this.fitnessArray[1]))) {
             System.out.println("aaa");
         }
 
     }
 
-    public double rangeX(){
-        double rX=0;
-        rX=10*0.05*XienceMath.random();
+    public double rangeX() {
+        double rX = 0;
+        rX = 10 * 0.05 * XienceMath.random();
         return rX;
     }
 
-    public double rangeY(){
-        double rY=0;
-        rY=11*0.05*XienceMath.random();
+    public double rangeY() {
+        double rY = 0;
+        rY = 11 * 0.05 * XienceMath.random();
         return rY;
     }
 
@@ -267,25 +264,25 @@ public class Classifier implements Serializable {
         }
     }
 
-    void mutateInt(double mutationRate){
+    void mutateInt(double mutationRate) {
         int mark = XienceMath.randomInt(7);
         if (XienceMath.random() < mutationRate) {
-            if (mark== 0) {
-                this.xaxis_D+=rangeX();
-            } else if(mark==1) {
-                this.xaxis_D-=rangeX();
-            }else if(mark==2) {
-                this.xaxis_U+=rangeX();
-            }else if(mark==3) {
-                this.xaxis_U-=rangeX();
-            }else if(mark==4) {
-                this.yaxis_D+=rangeY();
-            } else if(mark==5) {
-                this.yaxis_D-=rangeY();
-            }else if(mark==6) {
-                this.yaxis_U+=rangeY();
-            }else if(mark==7) {
-                this.yaxis_U-=rangeY();
+            if (mark == 0) {
+                this.xaxis_L += rangeX();
+            } else if (mark == 1) {
+                this.xaxis_L -= rangeX();
+            } else if (mark == 2) {
+                this.xaxis_U += rangeX();
+            } else if (mark == 3) {
+                this.xaxis_U -= rangeX();
+            } else if (mark == 4) {
+                this.yaxis_L += rangeY();
+            } else if (mark == 5) {
+                this.yaxis_L -= rangeY();
+            } else if (mark == 6) {
+                this.yaxis_U += rangeY();
+            } else if (mark == 7) {
+                this.yaxis_U -= rangeY();
             }
             //dont have update action as action already mutation with condition
         }
@@ -405,7 +402,7 @@ public class Classifier implements Serializable {
      */
     public String toString() {
         StringBuilder build = new StringBuilder();
-        build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d, bound:%f,%f,%f,%f", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience,xaxis_D,xaxis_U,yaxis_D,yaxis_U));
+        build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d, bound:%f,%f,%f,%f", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience, xaxis_L, xaxis_U, yaxis_L, yaxis_U));
         for (int i = 0; i < error.length; i++) {//TODO:
             build.append(String.format(", fitnessArray: %3.2f, Error: %3.2f, ErrorNor: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], errorNor[i], prediction[i]));
         }
@@ -413,5 +410,6 @@ public class Classifier implements Serializable {
 
         return build.toString();
     }
+
     public Classifier parent;
 }
