@@ -3,6 +3,7 @@ package nxcs;
 import java.awt.*;
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 /**
@@ -12,6 +13,14 @@ import java.util.stream.IntStream;
  */
 public class Classifier implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    //moead_strength
+    public double moeadStrengh;
+
+
+    public double getMoeadStrengh(double[] MOEAD_Weights){
+        return MOEAD_Weights[0]*this.prediction[0]+MOEAD_Weights[1]*this.prediction[1];
+    }
 
     /**
      * The global ID of classifiers. This is used to give
@@ -33,6 +42,8 @@ public class Classifier implements Serializable {
      * The reward prediction of a classifier
      */
     public double[] prediction = new double[2];//TOCHECK
+
+    public double[] predictionNor = new double[2];
 
     /**
      * The reward error prediction of a classifier
@@ -101,6 +112,13 @@ public class Classifier implements Serializable {
         this.weight_moead = weight_moead;
     }
 
+    public double getInverseStrength0() {
+        return 1.0 / prediction[0];
+    }
+
+    public double getInverseStrength1() {
+        return 1.0 / prediction[1];
+    }
 
     /**
      * Construct a classifier with the default values, building a random condition
@@ -321,8 +339,9 @@ public class Classifier implements Serializable {
      * @see NXCSParameters#thetaSub
      * @see NXCSParameters#e0
      */
+    //TODO:update couldSubsume
     boolean couldSubsume(double thetaSub, double e0) {
-        return experience > thetaSub && ((errorNor[0] + errorNor[1]) / 2) < e0;
+        return experience > thetaSub && ((predictionNor[0] + predictionNor[1]) / 2) > e0;
     }
 
     /**
@@ -404,7 +423,7 @@ public class Classifier implements Serializable {
         StringBuilder build = new StringBuilder();
         build.append(String.format("Classifier:%d [%s = %d, Numerosity: %d, weight:%f,%f, experienct:%d, bound:%f,%f,%f,%f", id, condition, action, numerosity, weight_moead[0], weight_moead[1], experience, xaxis_L, xaxis_U, yaxis_L, yaxis_U));
         for (int i = 0; i < error.length; i++) {//TODO:
-            build.append(String.format(", fitnessArray: %3.2f, Error: %3.2f, ErrorNor: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], errorNor[i], prediction[i]));
+            build.append(String.format(", fitnessArray: %3.2f, Error: %3.2f, ErrorNor: %3.2f, Prediction: %3.2f", fitnessArray[i], error[i], predictionNor[i], prediction[i]));
         }
         build.append("]\n");
 

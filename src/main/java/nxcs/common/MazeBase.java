@@ -161,7 +161,7 @@ public abstract class MazeBase implements Environment, ITrace {
                         while (this.finalStateCount < this.mp.finalStateUpperBound) {
                             Point from = this.getCurrentLocation();
                             //run each step
-                            nxcs.runIteration(finalStateCount, this.getState(),this.getPoint(), targetWeight, this.np.obj1[0], moeadObj.getWeights(), mp.method);
+                            nxcs.runIteration(finalStateCount, this.getState(), this.getCurrentLocation(), targetWeight, this.np.obj1[0], moeadObj.getWeights(), mp.method);
                             logger.debug(String.format("Trail:%d, finalStateCount:%d, [%s]=>[%s]", trailIndex, finalStateCount, from, this.getCurrentLocation()));
 
 //                            if (finalStateCount > 2497) {
@@ -184,7 +184,7 @@ public abstract class MazeBase implements Environment, ITrace {
                                 logger.info("testing process: Trained on " + finalStateCount + " final states");
 
 
-                                this.trace(moeadObj, nxcs, stepStatsLogger, trailIndex, targetWeight, this.np.obj1[0], finalStateCount,mp.method);
+                                this.trace(moeadObj, nxcs, stepStatsLogger, trailIndex, targetWeight, this.np.obj1[0], finalStateCount, mp.method);
                                 this.resetPosition();
 
                                 logged = true;
@@ -305,11 +305,6 @@ public abstract class MazeBase implements Environment, ITrace {
         return getStringForState(x, y);
     }
 
-
-    public Point getPoint() {
-        return new Point(x, y);
-    }
-
     public abstract ActionPareto getReward(String state, int action);
 
     public boolean isEndOfProblem(String state) {
@@ -341,7 +336,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
             logger.error(String.format("%d\t location:%d,%d", timestamp, (int) p.getX(), (int) p.getY()));
-            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(getStringForState((int) p.getX(), (int) p.getY()),getPoint(),method);
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(getStringForState((int) p.getX(), (int) p.getY()), this.getCurrentLocation(), method);
             for (double[] weight : weightList) {
                 logger.error("weight0:" + weight[0] + " weight1:" + weight[1]);
                 List<Classifier> A = C.stream().filter(b -> b.weight_moead == weight).collect(Collectors.toList());
@@ -509,7 +504,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
         for (Point p : this.openLocations) {
 
-            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(p.x, p.y), this.getPoint(), method);
+            List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(p.x, p.y), this.getCurrentLocation(), method);
             double[] PA1 = nxcs.generatePredictions(C, 0);
 
             double[] PA2 = nxcs.generatePredictions(C, 1);
@@ -660,7 +655,7 @@ public abstract class MazeBase implements Environment, ITrace {
         logger.error("===========Final States===============\t:" + finalStates);
         logger.error("===========Position Rewards===========\t" + gson.toJson(this.positionRewards));
 
-        if(mp.method!=0) {
+        if (mp.method != 0) {
             if (checkOpenLocationDuplicateEncoding()) {
                 throw new IOException("FATAL Error: duplicate open locations!");
             }
@@ -748,10 +743,10 @@ public abstract class MazeBase implements Environment, ITrace {
                 this.resetToSamePosition(openState);
                 List<Point> path = new ArrayList<>();
                 path.add(openState);
-                double[] PA1 = new double[]{0, 0, 0, 0};
-                double[] PA2 = new double[]{0, 0, 0, 0};
-                double[] PA = new double[]{0, 0, 0, 0};
-//                if (this.finalStateCount >= 1000) {
+                double[] pa0 = new double[np.numActions];
+                double[] pa1 = new double[np.numActions];
+                double[] paTotal = new double[np.numActions];
+//                if (this.finalStateCount >= 1500) {
 //                    List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(openState.x, openState.y));
 //                    PA1 = nxcs.generatePredictions(C, 0);
 //                    PA2 = nxcs.generatePredictions(C, 1);
@@ -760,11 +755,30 @@ public abstract class MazeBase implements Environment, ITrace {
 //                }
 
                 while (!this.isEndOfProblem(this.getState())) {
+
+
                     String state = this.getState();
 //                    if (stepCount > 20) {
 //                        nxcs.getMatchsetFromClassifier(nxcs.matchSet(state, traceMoeadWeight).get(0));
 //                    }
-                    int action = nxcs.classify(state,this.getPoint(), traceMoeadWeight, method);
+
+
+                    int action = nxcs.classify(state, this.getCurrentLocation(), traceMoeadWeight, method);
+
+                    if(this.getState().equals(this.getStringForState(openState.x, openState.y))){
+
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            pa0[i] = nxcs.PA0[i];
+                        }
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            pa1[i] = nxcs.PA1[i];
+                        }
+                        for (int i = 0; i < nxcs.PA0.length; i++) {
+                            paTotal[i] = nxcs.PAtotal[i];
+                        }
+
+                    }
+
                     logger.debug(String.format("@1 Test:%d, Steps:%d, state:%s, action:%d", resetPoint, this.stepCount, this.getCurrentLocation(), action));
 
                     //TODO:return the PA1[action]
@@ -780,18 +794,21 @@ public abstract class MazeBase implements Environment, ITrace {
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
                         //if path>100(step>100) means fail to reach the final state
-                        double[] pa0 = new double[nxcs.PA0.length];
-                        double[] pa1 = new double[nxcs.PA0.length];
-                        double[] paTotal = new double[nxcs.PA0.length];
-                        for (int i = 0; i < nxcs.PA0.length; i++) {
-                            pa0[i] = nxcs.PA0[i];
-                        }
-                        for (int i = 0; i < nxcs.PA0.length; i++) {
-                            pa1[i] = nxcs.PA1[i];
-                        }
-                        for (int i = 0; i < nxcs.PA0.length; i++) {
-                            paTotal[i] = nxcs.PAtotal[i];
-                        }
+//                        double[] pa0 = new double[nxcs.PA0.length];
+//                        double[] pa1 = new double[nxcs.PA0.length];
+//                        double[] paTotal = new double[nxcs.PA0.length];
+
+                        nxcs.classify(getStringForState(openState.x,openState.y), this.getCurrentLocation(), traceMoeadWeight, method);
+
+//                        for (int i = 0; i < nxcs.PA0.length; i++) {
+//                            pa0[i] = nxcs.PA0[i];
+//                        }
+//                        for (int i = 0; i < nxcs.PA0.length; i++) {
+//                            pa1[i] = nxcs.PA1[i];
+//                        }
+//                        for (int i = 0; i < nxcs.PA0.length; i++) {
+//                            paTotal[i] = nxcs.PAtotal[i];
+//                        }
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path
                                 , pa0, pa1, paTotal);
@@ -818,7 +835,9 @@ public abstract class MazeBase implements Environment, ITrace {
 
     private ArrayList<ActionPareto> getParetoByState(NXCS nxcs, Point location, List<double[]> weights) throws Exception {
         ArrayList<ActionPareto> ret = new ArrayList<ActionPareto>();
-        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y),this.getPoint(),mp.method);
+//        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y), this.getPoint(), mp.method);
+        List<Classifier> C = nxcs.generateMatchSetAllweightNoDeletion(this.getStringForState(location.x, location.y), location, mp.method);
+
         for (double[] w : weights) {
             for (int a : this.act) {
                 List<Classifier> Cweight = C.stream().filter(x -> Arrays.equals(x.weight_moead, w) && x.action == a).collect(Collectors.toList());

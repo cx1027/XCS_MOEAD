@@ -10,6 +10,7 @@ import nxcs.common.MazeParameters;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -136,40 +137,72 @@ public class NXCS implements IBase {
         return act;
     }
 
+//    public static Classifier getRouletteSelectedClassifier(List<Classifier> classifierSet) {
+//        double rouletteStrength0 = classifierSet.getSumStrength() * RAND.nextDouble();
+//        double rouletteStrength1 = classifierSet.getSumStrength() * RAND.nextDouble();
+//        double accumulatedStrength0 = 0.0;
+//        double accumulatedStrength1 = 0.0;
+//        for (Classifier classifier : classifierSet) {
+//            //TODO:2-D
+//            accumulatedStrength0 = accumulatedStrength0 + classifier.prediction[0];
+//            accumulatedStrength1 = accumulatedStrength1 + classifier.prediction[1];
+//            if(rouletteStrength0 < accumulatedStrength0) {
+//                return classifier;
+//            }
+//        }
+//        throw new IllegalStateException(String.format("Roulette wheel for %s is malformed", classifierSet));
+//    }
 
-    /**
-     * calculate hyper volume of current state
-     *
-     * @param state
-     *            the state to classifier
-     **/
-    // public double[] calHyper(String state) {
-    // HyperVolumn hypervolumn = new HyperVolumn();
-    // double[] hyper = { 0, 0, 0, 0 };
-    // List<Classifier> C = generateMatchSet(state);
-    // //loop each action
-    // for (int action = 0; action < params.numActions; action++) {
-    // final int act = action;
-    // List<Classifier> A = C.stream().filter(b -> b.action ==
-    // act).collect(Collectors.toList());
-    //
-    // Collections.sort(A, new Comparator<Classifier>() {
-    // @Override
-    // public int compare(Classifier o1, Classifier o2) {
-    // return o1.fitness == o2.fitness ? 0 : (o1.fitness > o2.fitness ? 1 : -1);
-    // }
-    // });
-    // if (A.size() == 0) {
-    // hyper[act] = 0;
-    // } else {
-    // double hyperP = 0;
-    // 1).getV(), new Qvector(-10, -10));
-    // hyper[act] = hyperP;
-    // }
-    // // System.out.println(hyperP);
-    // }
-    // return hyper;
-    // }
+
+//    public char[] getAction(List<Classifier> matchSet) {
+//
+//        //String action = (isExplore) ? "exploring" : "exploiting";
+//        //log.log("\n\nClassifier system is " + action + " and detected " + String.valueOf(input));
+//
+//
+//
+//        // roulette wheel selection to find active classifier
+//        Classifier activeClassifier = getRouletteSelectedClassifier(matchSet);
+//
+////        Logger("activeClassifier=\n" + activeClassifier);
+//
+//        // set [A_-1] = [A]
+//
+//
+//        // generate a new action set of classifiers with the same
+//        // action as the selected classifier
+//        actionSet = getActionSet(matchset, activeClassifier);
+//        log.log("\nFormed an action set [A]=\n" + actionSet);
+//
+//        // create a bucket
+//        double bucket = getBucketValue(actionSet, beta);
+//        log.log("Current action set bucket = " + bucket);
+//
+//        // add strength gamma * bucket / |[A_-1]| to each classifier in [A_-1]
+//        log.log("...reinforcing classifiers from previous action set.");
+//        double prevActionSetReward = (gamma * bucket) / prevActionSet.size();
+//
+//        prevActionSet.getClassifiers().stream().forEach(c -> c.increaseStrength(prevActionSetReward));
+//
+//        // taxation of classifiers in [M] - [A]
+//        ZCSClassifierSet taxSet = matchset.setMinus(actionSet);
+//        log.log("...taxing classifiers in [T]=\n" + taxSet);
+//        taxClassifiers(taxSet, tau);
+//        log.log("\n...after tax [T]=\n" + taxSet);
+//
+//        if(RAND.nextDouble() < rho) {
+//            // invoke the GA
+//            log.log("GA invoked...");
+//            // panmictic GA
+//            geneticAlgorithm(population, chi, mu, log);
+//            gaInvocations++;
+//        }
+//
+//        return activeClassifier.getAction();
+//    }
+//
+//
+
 
     /**
      * Runs a single iteration of the learning process of this NXCS instance
@@ -180,14 +213,23 @@ public class NXCS implements IBase {
 
         /* form [M] */
         List<Classifier> matchSet = generateWeightMatchSet(previousState, previousPoint, MOEAD_Weights);
+
         /* select a */
-        if (XienceMath.randomInt(params.numActions) <= 1) {
+        if (XienceMath.randomInt(params.numActions) <= 1) {//0-1, 2-3
             double[] predictions = generateTotalPredictions_Norm(matchSet, MOEAD_Weights.get(0));
             // select best actiton, not just explore
             action = getActionDeterministic(predictions);
         } else {
             action = XienceMath.randomInt(params.numActions);
         }
+
+        // TODO:roulette wheel selection to find active classifier
+        //todo: set [A_-1] = [A]
+        //prevActionSet = actionSet;
+        //actionSet = getActionSet(matchset, activeClassifier);
+        //double bucket = getBucketValue(actionSet, beta);
+
+
 
         /* get immediate reward */
         reward = env.getReward(previousState, action);
@@ -199,14 +241,14 @@ public class NXCS implements IBase {
         }
         /* get current state */
         String curState = env.getState();
-        Point curPoint = env.getPoint();
+        Point curLocation = env.getCurrentLocation();
 
         /* if previous State!null, update [A]-1 and run ga */
         if (previousState != null) {
             /* updateSet include P calculation */
             //TODO:update setA and runGA according to weights
             for (int w = 0; w < MOEAD_Weights.size(); w++) {
-                List<Classifier> setA_W = updateSet(previousState, curState, previousPoint, curPoint, action, reward, MOEAD_Weights.get(w), params.groupSize);
+                List<Classifier> setA_W = updateSet(previousState, curState, previousPoint, curLocation, action, reward, MOEAD_Weights.get(w), params.groupSize);
                 runGA(setA_W, previousState, previousPoint, MOEAD_Weights.get(w));
             }
         }
@@ -417,9 +459,10 @@ public class NXCS implements IBase {
             return;
         }
 
-        double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
+        double averagePrediciton = population.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0]+c.predictionNor[1])) / numerositySum;
+
         double[] xvotes = population.stream()
-                .mapToDouble(c -> c.deleteVote(averageFitness, params.thetaDel, params.delta)).toArray();
+                .mapToDouble(c -> c.deleteVote(averagePrediciton, params.thetaDel, params.delta)).toArray();
 //        double voteSum = Arrays.stream(xvotes).sum();
 //        double[] votes = Arrays.stream(xvotes).map(d -> d / xum).toArray();
         double voteSum = 0;
@@ -443,9 +486,9 @@ public class NXCS implements IBase {
 //            System.out.println(String.format("loop: %d\tweitght:%f:%f\tchoice:%s", cnt, moeadWeight[0], moeadWeight[1], xchoice.toString()));
             if (previousChoice != null && previousChoice.id == xchoice.id) {
                 tempList.remove(xchoice);
-                double avgFitness = tempList.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
+                double avgPrediciton = tempList.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0]+c.predictionNor[1])) / numerositySum;
 
-                xvotes = tempList.stream().mapToDouble(c -> c.deleteVote(avgFitness, params.thetaDel, params.delta)).toArray();
+                xvotes = tempList.stream().mapToDouble(c -> c.deleteVote(avgPrediciton, params.thetaDel, params.delta)).toArray();
                 voteSum = 0;
                 for (int i = 0; i < xvotes.length; i++) {
                     voteSum += xvotes[i];
@@ -471,7 +514,7 @@ public class NXCS implements IBase {
             //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
             if (method == 0) {
                 //0:pointMatch
-                for (String tstate : getStateByLocations(getCoveringLocationByRange(choice.xaxis_L,choice.xaxis_U, choice.yaxis_L, choice.yaxis_U))) {
+                for (String tstate : getStateByLocations(getCoveringLocationByRange(choice.xaxis_L, choice.xaxis_U, choice.yaxis_L, choice.yaxis_U))) {
                     List<Classifier> actionSet = population.stream().filter(c -> stateMatches(c.condition, tstate)
                             && Arrays.equals(c.weight_moead, choice.weight_moead)
                             && c.action == choice.action)
@@ -520,11 +563,11 @@ public class NXCS implements IBase {
         s5++;
         assert (clas != null) : "Cannot insert null classifier";
         Optional<Classifier> same = null;
-        if(method==0){
-            same = population.stream().filter(c -> c.action == clas.action && c.xaxis_L>clas.xaxis_L&&c.xaxis_U<clas.xaxis_U&&c.yaxis_U<clas.yaxis_U&&c.yaxis_L>clas.yaxis_L && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
+        if (method == 0) {
+            same = population.stream().filter(c -> c.action == clas.action && c.xaxis_L > clas.xaxis_L && c.xaxis_U < clas.xaxis_U && c.yaxis_U < clas.yaxis_U && c.yaxis_L > clas.yaxis_L && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
 
-        }else{
-        same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
+        } else {
+            same = population.stream().filter(c -> c.action == clas.action && c.condition.equals(clas.condition) && Arrays.equals(c.weight_moead, clas.weight_moead)).findFirst();
         }
         if (same.isPresent()) {
             same.get().numerosity++;
@@ -568,81 +611,6 @@ public class NXCS implements IBase {
         return generateClassifier(params, state, openLocation, unusedActions.iterator().next(), this.timestamp, moeadWeight);
     }
 
-    /**
-     * Generates a normalized prediction array from the given match set, based
-     * on the softmax function.
-     *
-     * @param setM The match set to use consider for these predictions
-     * @return The prediction array calculated
-     */
-    public double[] generatePredictions1(List<Classifier> setM, double[] weight) {
-        double[] predictions0 = new double[params.numActions];
-        double[] fitnessSum0 = new double[params.numActions];
-        if (setM.size() == 0)
-            return predictions0;
-
-        // Sum the policy parameter for each action
-        for (Classifier clas : setM) {
-            predictions0[clas.action] += clas.fitnessArray[0] * clas.prediction[0];
-            fitnessSum0[clas.action] += clas.fitnessArray[0];
-        }
-
-        // sum:Take the exponential of each value??????
-        double sum0 = 0;
-        // for(int i = 0;i < predictions.length;i ++){
-        // predictions[i] = XienceMath.clamp(predictions[i], -10, 10);
-        // predictions[i] = Math.exp(predictions[i]);
-        //
-        // }
-
-        // prediciton
-        for (int i = 0; i < predictions0.length; i++) {
-            predictions0[i] /= fitnessSum0[i];
-            sum0 += predictions0[i];
-        }
-        // Normalize
-        for (int i = 0; i < predictions0.length; i++) {
-            predictions0[i] /= sum0;
-        }
-
-        assert (predictions0.length == params.numActions) : "Predictions are missing?";
-        assert (Math.abs(Arrays.stream(predictions0).sum() - 1) <= 0.0001) : "Predictions not normalized";
-
-        double[] predictions1 = new double[params.numActions];
-        double[] fitnessSum1 = new double[params.numActions];
-        if (setM.size() == 0)
-            return predictions1;
-
-        // Sum the policy parameter for each action
-        for (Classifier clas : setM) {
-            predictions1[clas.action] += clas.fitnessArray[0] * clas.prediction[0];
-            fitnessSum1[clas.action] += clas.fitnessArray[0];
-        }
-
-        // sum:Take the exponential of each value??????
-        double sum1 = 0;
-        // for(int i = 0;i < predictions.length;i ++){
-        // predictions[i] = XienceMath.clamp(predictions[i], -10, 10);
-        // predictions[i] = Math.exp(predictions[i]);
-        //
-        // }
-
-        // prediciton
-        for (int i = 0; i < predictions1.length; i++) {
-            predictions1[i] /= fitnessSum1[i];
-            sum1 += predictions1[i];
-        }
-        // Normalize
-        for (int i = 0; i < predictions1.length; i++) {
-            predictions1[i] /= sum1;
-        }
-
-        assert (predictions1.length == params.numActions) : "Predictions are missing?";
-        assert (Math.abs(Arrays.stream(predictions1).sum() - 1) <= 0.0001) : "Predictions not normalized";
-
-        return getTotalPrediciton(weight, predictions0, predictions1);
-    }
-
     public double[] generateTotalPredictions_Norm(List<Classifier> setM, double[] weight) {
         double[] predictions0 = generatePredictions(setM, 0);
         // if(predictions0[0]==Double.NaN){
@@ -667,41 +635,26 @@ public class NXCS implements IBase {
     }
 
 
-    public double[] generateTotalPredictions(List<Classifier> setM, double[] weight) {
-        double[] predictions0 = generatePredictions(setM, 0);
-        // if(predictions0[0]==Double.NaN){
-        // System.out.println("!!!!!!!!!!!!!NAN");
-        // }
-        double[] predictions1 = generatePredictions(setM, 1);
-        // if(predictions1[0]==Double.NaN){
-        // System.out.println("!!!!!!!!!!!!!NAN");
-        // }
 
-        double[] aaa = getTotalPrediciton(weight, predictions0, predictions1);
-        if (aaa[0] == Double.NaN) {
-            System.out.println("!!!!!!!!!!!!!NAN");
-        }
 
-        return aaa;
-    }
-
+    //TODO:Update prediciton_ as predition Sum of Action a/[a] size
     public double[] generatePredictions(List<Classifier> setM, int obj) {
         double[] predictions = new double[params.numActions];
-        double[] fitnessSum = new double[params.numActions];
+        double[] sizeSum = new double[params.numActions];
         double sum = 0;
         if (setM.size() == 0)
             return predictions;
 
         // Sum the policy parameter for each action
         for (Classifier clas : setM) {
-            predictions[clas.action] += clas.fitnessArray[obj] * clas.prediction[obj];
-            fitnessSum[clas.action] += clas.fitnessArray[obj];
+            predictions[clas.action] += clas.prediction[obj];
+            sizeSum[clas.action] += 1;//TODO:count Size
         }
 
         // prediciton
         for (int i = 0; i < predictions.length; i++) {
-            predictions[i] /= fitnessSum[i];
-            sum += predictions[i];
+            predictions[i] /= sizeSum[i];
+//            sum += predictions[i];
         }
         // Normalize
 //		for (int i = 0; i < predictions.length; i++) {
@@ -963,7 +916,7 @@ public class NXCS implements IBase {
             System.out.println(String.format("no classifier with this weight:%f, %f", moeadWeight[0], moeadWeight[1]));
 //            generateCoveringClassifierbyWeight(previousState, moeadWeight);
             Classifier clas = generateClassifier(params, previousState, previousPoint, action, 0, moeadWeight);
-            insertIntoPopulation(clas,mpParams.method);
+            insertIntoPopulation(clas, mpParams.method);
             deleteFromPopulation(mpParams.method);
 
             moead_actionSet.add(clas);
@@ -994,28 +947,37 @@ public class NXCS implements IBase {
             for (int i = 0; i < clas.prediction.length; i++) {
                 if (clas.experience < 1. / params.beta) {
                     clas.prediction[i] = clas.prediction[i] + (P[i] - clas.prediction[i]) / clas.experience;
-
-                    // averageSize calculate should be just once
-                    if (i == 0) {
-                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) / clas.experience;
+                    if(i==0) {
+                        clas.predictionNor[i] =stepNor(clas.prediction[i], 100);
+                    }else {
+                        clas.predictionNor[i] =rewardNor(clas.prediction[i], 1000,0);
                     }
-                    clas.error[i] = clas.error[i]
-                            + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) / clas.experience;
-                    //norm error
-
-                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
+                    // averageSize calculate should be just once
+//                    if (i == 0) {
+//                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) / clas.experience;
+//                    }
+//                    clas.error[i] = clas.error[i]
+//                            + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) / clas.experience;
+//                    //norm error
+//
+//                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
 
 
                 } else {
                     clas.prediction[i] = clas.prediction[i] + (P[i] - clas.prediction[i]) * params.beta;
-                    if (i == 0) {
-                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
+                    if(i==0) {
+                        clas.predictionNor[i] =stepNor(clas.prediction[i], 100);
+                    }else {
+                        clas.predictionNor[i] =rewardNor(clas.prediction[i], 1000,0);
                     }
-                    clas.error[i] = clas.error[i] + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) * params.beta;
-                    //norm error
-
-
-                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
+//                    if (i == 0) {
+//                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
+//                    }
+//                    clas.error[i] = clas.error[i] + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) * params.beta;
+//                    //norm error
+//
+//
+//                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
 
 
                 }
@@ -1025,25 +987,25 @@ public class NXCS implements IBase {
 
         // Update Fitness
         //TODO:HOW TO SET PARAMS.E0??????
-        Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-                cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
-        double accuracySum0 = kappa0.entrySet().stream()
-                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
-        moead_actionSet.forEach(cl -> cl.fitnessArray[0] += params.beta
-                * (kappa0.get(cl) * cl.numerosity / accuracySum0 - cl.fitnessArray[0]));
-
-        Map<Classifier, Double> kappa1 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-                cl -> (cl.errorNor[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[1] / params.e0, -params.nu)));
-        double accuracySum1 = kappa1.entrySet().stream()
-                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
-        moead_actionSet.forEach(cl -> cl.fitnessArray[1] += params.beta
-                * (kappa1.get(cl) * cl.numerosity / accuracySum1 - cl.fitnessArray[1]));
-
-        //update fitness
-        int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
-        double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
-        moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] - averageFitness + cl.fitnessArray[1] - averageFitness) / 2);
-
+//        Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
+//                cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
+//        double accuracySum0 = kappa0.entrySet().stream()
+//                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
+//        moead_actionSet.forEach(cl -> cl.fitnessArray[0] += params.beta
+//                * (kappa0.get(cl) * cl.numerosity / accuracySum0 - cl.fitnessArray[0]));
+//
+//        Map<Classifier, Double> kappa1 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
+//                cl -> (cl.errorNor[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[1] / params.e0, -params.nu)));
+//        double accuracySum1 = kappa1.entrySet().stream()
+//                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
+//        moead_actionSet.forEach(cl -> cl.fitnessArray[1] += params.beta
+//                * (kappa1.get(cl) * cl.numerosity / accuracySum1 - cl.fitnessArray[1]));
+//
+//        //update fitness
+//        int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
+//        double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
+//        moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] - averageFitness + cl.fitnessArray[1] - averageFitness) / 2);
+//
 
         if (params.doActionSetSubsumption) {
             return actionSetSubsumption(moead_actionSet);
@@ -1124,6 +1086,16 @@ public class NXCS implements IBase {
 
             double fitnessSum = setA.stream().mapToDouble(cl -> cl.fitness).sum();
 
+
+//            for (int i = 0; i < predictions0.length; i++) {
+//                predictions0[i] = stepNor(predictions0[i], 100);
+//            }
+//            for (int i = 0; i < predictions1.length; i++) {
+//                predictions1[i] = rewardNor(predictions1[i], 1000, 0);
+//            }
+//
+//            double[] aaa = getTotalPrediciton(weight, predictions0, predictions1);
+
             //select parents and generate child from moead_setA
             double[] p = setA.stream().mapToDouble(cl -> cl.fitness / fitnessSum).toArray();
             Classifier parent1 = XienceMath.choice(setA, p);
@@ -1140,9 +1112,11 @@ public class NXCS implements IBase {
                 intCrossover(child1, child2, openlocation);
                 for (int i = 0; i < 2; i++) {
                     child1.prediction[i] = child2.prediction[i] = (parent1.prediction[i] + parent2.prediction[i]) / 2;
-                    child1.error[i] = child2.error[i] = 0.25 * (parent1.error[i] + parent2.error[i]) / 2;
-                    child1.fitnessArray[i] = child2.fitnessArray[i] = 0.1
-                            * (parent1.fitnessArray[i] + parent2.fitnessArray[i]) / 2;
+                    child1.predictionNor[i] = child2.predictionNor[i] = (parent1.predictionNor[i] + parent2.predictionNor[i]) / 2;
+
+//                    child1.error[i] = child2.error[i] = 0.25 * (parent1.error[i] + parent2.error[i]) / 2;
+//                    child1.fitnessArray[i] = child2.fitnessArray[i] = 0.1
+//                            * (parent1.fitnessArray[i] + parent2.fitnessArray[i]) / 2;
                 }
             }
 
@@ -1163,10 +1137,10 @@ public class NXCS implements IBase {
                     } else if (parent2.doesSubsume(child, params.thetaSub, params.e0)) {
                         parent2.numerosity++;
                     } else {
-                        insertIntoPopulation(child,mpParams.method);
+                        insertIntoPopulation(child, mpParams.method);
                     }
                 } else {
-                    insertIntoPopulation(child,mpParams.method);
+                    insertIntoPopulation(child, mpParams.method);
                 }
                 deleteFromPopulation(mpParams.method);
             }
