@@ -18,7 +18,6 @@ public interface Environment {
      */
     public String getState();
 
-    public Point getPoint();
     /**
      * Calculates and returns the reward of performing the given action in the given state,
      * possibly updating the state.
@@ -57,5 +56,6 @@ public interface Environment {
 //    public ArrayList<StepSnapshot> GetTrainingPAResultInCSV(int experiment_num, int timestamp, NXCS nxcs, double[] weight, double obj_r1);
 
     public Point getCurrentLocation();
+
     public List<Integer> getActions();
 }
