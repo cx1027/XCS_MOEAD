@@ -284,6 +284,59 @@ public class MOEAD {
                 }
             }
         }
+//        this.weights.add(new double[]{0.52,0.48});
+//        this.weights.add(new double[]{0.54,0.46});
+//        this.weights.add(new double[]{0.56,0.44});
+//        this.weights.add(new double[]{0.58,0.42});
+//        this.weights.add(new double[]{0.6,0.4});
+//        this.weights.add(new double[]{0.62,0.38});
+//        this.weights.add(new double[]{0.64,0.36});
+//        this.weights.add(new double[]{0.66,0.34});
+//        this.weights.add(new double[]{0.68,0.32});
+//        this.weights.add(new double[]{0.7,0.3});
+//        this.weights.add(new double[]{0.72,0.28});
+//        this.weights.add(new double[]{0.74,0.26});
+//        this.weights.add(new double[]{0.76,0.24});
+//        this.weights.add(new double[]{0.78,0.22});
+//        this.weights.add(new double[]{0.8,0.2});
+//        this.weights.add(new double[]{0.82,0.18});
+//        this.weights.add(new double[]{0.84,0.16});
+//        this.weights.add(new double[]{0.86,0.14});
+//        this.weights.add(new double[]{0.88,0.12});
+//        this.weights.add(new double[]{0.9,0.1});
+//        this.weights.add(new double[]{0.92,0.08});
+//        this.weights.add(new double[]{0.94,0.06});
+//        this.weights.add(new double[]{0.96,0.04});
+//        this.weights.add(new double[]{0.98,0.02});
+//        this.weights.add(new double[]{1,0});
+//        this.weights.add(new double[]{0.52,0.48});
+//        this.weights.add(new double[]{0.53,0.47});
+//        this.weights.add(new double[]{0.54,0.46});
+//        this.weights.add(new double[]{0.55,0.45});
+//        this.weights.add(new double[]{0.56,0.44});
+//        this.weights.add(new double[]{0.57,0.43});
+//        this.weights.add(new double[]{0.58,0.42});
+//        this.weights.add(new double[]{0.59,0.41});
+//        this.weights.add(new double[]{0.6,0.4});
+//        this.weights.add(new double[]{0.61,0.39});
+//        this.weights.add(new double[]{0.62,0.38});
+//        this.weights.add(new double[]{0.63,0.37});
+//        this.weights.add(new double[]{0.64,0.36});
+//        this.weights.add(new double[]{0.65,0.35});
+//        this.weights.add(new double[]{0.66,0.34});
+//        this.weights.add(new double[]{0.67,0.33});
+//        this.weights.add(new double[]{0.68,0.32});
+//        this.weights.add(new double[]{0.69,0.31});
+//        this.weights.add(new double[]{0.7,0.3});
+//        this.weights.add(new double[]{0.71,0.29});
+//        this.weights.add(new double[]{0.72,0.28});
+//        this.weights.add(new double[]{0.73,0.27});
+//        this.weights.add(new double[]{0.74,0.26});
+//        this.weights.add(new double[]{0.75,0.25});
+//        this.weights.add(new double[]{0.76,0.24});
+//        this.weights.add(new double[]{0.77,0.23});
+//        this.weights.add(new double[]{0.78,0.22});
+
         this.popsize = this.weights.size();
     }
 

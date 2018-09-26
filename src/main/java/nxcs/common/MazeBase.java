@@ -140,7 +140,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
-                        moeadObj.popsize = 25;
+                        moeadObj.popsize = 10;
                         moeadObj.neighboursize = 3;
                         moeadObj.TotalItrNum = 250;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
@@ -655,11 +655,11 @@ public abstract class MazeBase implements Environment, ITrace {
         logger.error("===========Final States===============\t:" + finalStates);
         logger.error("===========Position Rewards===========\t" + gson.toJson(this.positionRewards));
 
-        if (mp.method != 0) {
-            if (checkOpenLocationDuplicateEncoding()) {
-                throw new IOException("FATAL Error: duplicate open locations!");
-            }
-        }
+//        if (mp.method != 0) {
+//            if (checkOpenLocationDuplicateEncoding()) {
+//                throw new IOException("FATAL Error: duplicate open locations!");
+//            }
+//        }
         return this;
     }
 

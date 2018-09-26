@@ -25,13 +25,16 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        mp.totalTrailCount = 1;
-        mp.finalStateUpperBound = 1200;
-        mp.resultInterval = 1200;
-        mp.logLowerFinalState = false;
+        MazeParameters mp_test = new MazeParameters();
+        NXCSParameters np_test = new NXCSParameters();
+
+        mp.totalTrailCount = 30;
+        mp.finalStateUpperBound = 500;
+        mp.resultInterval = 20;
+        mp.logLowerFinalState = true;
         mp.logFolder = "log/maze1/csv/";
         //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
-        mp.method = 0;
+        mp.method = 1;
 
 
         np.N = 150000;
@@ -40,14 +43,17 @@ public class MazeRunner {
         np.rho0 = 1000;
         np.pHash = 0.01;
         np.gamma = 0.85;
-        np.crossoverRate = 0.8;
-        np.mutationRate = 0.03;
+//        np.crossoverRate = 0.8;
+//        np.mutationRate = 0.03;
+        np.crossoverRate = 0.001;
+        np.mutationRate = 0.0001;
         np.thetaMNA = 4;
         np.thetaGA = 800;
         // np.thetaGA = 0;
         // np.e0 = 0.05;
         np.e0 = 0.05;
-        np.thetaDel = 200;
+//        np.thetaDel = 200;
+        np.thetaDel = 1000;
         np.doActionSetSubsumption = false;
         np.doGASubsumption = false;
         np.initialPrediction = 10;
@@ -75,8 +81,12 @@ public class MazeRunner {
 
         try {
             //initialize and run
-            mp.mazeFile = "data/DSTorigin.txt";
-            mp.rewardFile = "rewards/DSTfullUpdate.json";
+            mp.mazeFile = "data/NuwMmaze.txt";
+            mp.rewardFile = "rewards/NewMmaze.json";
+
+            mp_test.mazeFile = "data/NuwMmaze.txt";
+            mp_test.rewardFile = "rewards/NewMmaze.json";
+
             maze = new dst_weighted_sum(mp.mazeFile);
             maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
         } catch (Exception e) {
