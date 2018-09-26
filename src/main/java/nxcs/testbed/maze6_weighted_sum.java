@@ -89,12 +89,12 @@ public class maze6_weighted_sum extends MazeBase {
 //        traceWeights.add(new double[]{0.0d, 1.0d});
 //        traceWeights.add(new double[]{0.56d, 0.44d});
 //        traceWeights.add(new double[]{1.0d, 0.0d});
-        ret.add(traceWeights.get(0));
-        ret.add(traceWeights.get(12));
-        ret.add(traceWeights.get(1));
-        ret.add(traceWeights.get(13));
-        ret.add(traceWeights.get(traceWeights.size()-2));
-        ret.add(traceWeights.get(traceWeights.size()-1));
-        return ret;//traceWeights;
+//        ret.add(traceWeights.get(0));
+//        ret.add(traceWeights.get(12));
+//        ret.add(traceWeights.get(1));
+//        ret.add(traceWeights.get(13));
+//        ret.add(traceWeights.get(traceWeights.size()-2));
+//        ret.add(traceWeights.get(traceWeights.size()-1));
+        return traceWeights;//traceWeights;
     }
 }

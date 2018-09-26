@@ -25,7 +25,7 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        mp.totalTrailCount = 10;
+        mp.totalTrailCount = 30;
         mp.finalStateUpperBound = 500;
         mp.resultInterval = 20;
         mp.logLowerFinalState = true;
@@ -40,14 +40,18 @@ public class MazeRunner {
         np.rho0 = 1000;
         np.pHash = 0.01;
         np.gamma = 0.85;
-        np.crossoverRate = 0.8;
-        np.mutationRate = 0.03;
+//        np.crossoverRate = 0.8;
+//        np.mutationRate = 0.03;
+        np.crossoverRate = 0.001;
+        np.mutationRate = 0.001;
         np.thetaMNA = 4;
-        np.thetaGA = 800;
+//        np.thetaGA = 800;
+        np.thetaGA = 10000;
         // np.thetaGA = 0;
         // np.e0 = 0.05;
         np.e0 = 0.05;
-        np.thetaDel = 200;
+//        np.thetaDel = 200;
+        np.thetaDel = 1000;
         np.doActionSetSubsumption = false;
         np.doGASubsumption = false;
         np.initialPrediction = 10;

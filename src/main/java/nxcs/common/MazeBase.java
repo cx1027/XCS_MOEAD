@@ -140,7 +140,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
-                        moeadObj.popsize = 15;
+                        moeadObj.popsize = 10;
                         moeadObj.neighboursize = 3;
                         moeadObj.TotalItrNum = 250;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
