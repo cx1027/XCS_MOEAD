@@ -7,3 +7,9 @@ NXCS + MOEAD to solve maze problems
 - Maze parameters
 
 - NXCS parameters
+
+
+
+#branch
+gawork: zcs works for mmaze
+xcs_mix:xcs works for mmaze
