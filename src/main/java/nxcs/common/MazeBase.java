@@ -60,6 +60,7 @@ public abstract class MazeBase implements Environment, ITrace {
      * The number of timesteps since the agent last discovered a final state
      */
     protected int stepCount;
+    protected Hashtable<String, Boolean> expectedPathStep;
 
     public List<Hashtable<Point, ActionPareto>> positionRewards;
     protected Hashtable<Point, ActionPareto> currentPositionReward;
@@ -140,9 +141,9 @@ public abstract class MazeBase implements Environment, ITrace {
 
                         //initialize MOEAD
                         MOEAD moeadObj = new MOEAD(this);
-                        moeadObj.popsize = 10;
-                        moeadObj.neighboursize = 3;
-                        moeadObj.TotalItrNum = 250;
+                        moeadObj.popsize = np.moeadPopSize;
+                        moeadObj.neighboursize = np.moeadNeighbourSize;
+                        moeadObj.TotalItrNum = np.moeadTotalItrNum;
                         moeadObj.initialize(this.openLocations, this.np, nxcs);
                         nxcs.setMoead(moeadObj);
 
@@ -176,6 +177,8 @@ public abstract class MazeBase implements Environment, ITrace {
                                 finalStateCount++;
 
                                 logged = false;
+
+
                             }
 
                             //test algorithm if meet the test condition: 1000 arrived final states
@@ -188,9 +191,10 @@ public abstract class MazeBase implements Environment, ITrace {
                                 this.resetPosition();
 
                                 logged = true;
+
                                 stepStatsLogger.writeLogAndCSVFiles_TESTING(
-                                        String.format("log/%s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv",
-                                                this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
+                                        String.format("log/%s - %s - %s - Trial %d - TRIAL_NUM - %d - TEST.csv",
+                                                mp.maze, this.getClass().getName(), this.mp.fileTimestampFormat, 0, this.np.N),
                                         String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
                                                 this.np.obj1[0], 0, this.np.N));
                             }//endof log
@@ -212,10 +216,13 @@ public abstract class MazeBase implements Environment, ITrace {
 //                                String.format("log/datadump/%s - %s - Trail %d-<TIMESTEP_NUM> - %d.log", "MOXCS",
 //                                        this.np.obj1[obj_num], trailIndex, this.np.N));
                         logger.info("End of trail:" + trailIndex);
-                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d, s5=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5));
+                        logger.info(String.format("NXCS:s1=%d, s2=%d, s3=%d, s4=%d, s5=%d, gaNum=%d", nxcs.s1, nxcs.s2, nxcs.s3, nxcs.s4, nxcs.s5, nxcs.gaNum));
+
+
                     } // totalTrailCount loop
 
                     logger.info(String.format("End of %d/%d, objective: objective[%d]=%d", finalStateCount, this.mp.finalStateUpperBound, 0, this.np.obj1[0]));
+
                 } // action selection loop
 
             }
@@ -545,24 +552,8 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
 
-    public ArrayList<ArrayList<StepSnapshot>> getOpenLocationExpectPaths() {
-        ArrayList<ArrayList<StepSnapshot>> expect = new ArrayList<ArrayList<StepSnapshot>>();
-        ArrayList<StepSnapshot> e21 = new ArrayList<StepSnapshot>();
-        e21.add(new StepSnapshot(new Point(2, 1), new Point(1, 1), 1));
-        e21.add(new StepSnapshot(new Point(2, 1), new Point(6, 1), 4));
-        expect.add(e21);
-        ArrayList<StepSnapshot> e31 = new ArrayList<StepSnapshot>();
-        e31.add(new StepSnapshot(new Point(3, 1), new Point(1, 1), 2));
-        e31.add(new StepSnapshot(new Point(3, 1), new Point(6, 1), 3));
-        expect.add(e31);
-        ArrayList<StepSnapshot> e41 = new ArrayList<StepSnapshot>();
-        e41.add(new StepSnapshot(new Point(4, 1), new Point(6, 1), 2));
-        expect.add(e41);
-        ArrayList<StepSnapshot> e51 = new ArrayList<StepSnapshot>();
-        e51.add(new StepSnapshot(new Point(5, 1), new Point(6, 1), 1));
-        expect.add(e51);
-
-        return expect;
+    public Hashtable<String, Boolean> getOpenLocationExpectPaths() {
+        return null;
     }
 
     public MazeBase initialize(MazeParameters mp, NXCSParameters np, ArrayList<Hashtable<Point, ActionPareto>> positionRewards, HyperVolumn hyperVolumnCalculator, IParetoCalculator paretoCalculator) throws IOException {
@@ -574,12 +565,12 @@ public abstract class MazeBase implements Environment, ITrace {
 
         // Set up the encoding table FOR DST
         encodingTable = new HashMap<Character, String>();
-        encodingTable.put('O', "000");
-        encodingTable.put('T', "110");
-        encodingTable.put(null, "100");// For out of the maze positions
-        encodingTable.put('F', "111");
-        encodingTable.put('N', "011");
-        encodingTable.put('M', "001");
+        encodingTable.put('O', "00");
+        encodingTable.put('T', "10");
+//        encodingTable.put(null, "01");// For out of the maze positions
+        encodingTable.put('F', "11");
+        encodingTable.put('N', "01");
+//        encodingTable.put('M', "001");
 
         // encodingTable.put('1', "001");
         // encodingTable.put('3', "011");
@@ -660,6 +651,8 @@ public abstract class MazeBase implements Environment, ITrace {
 //                throw new IOException("FATAL Error: duplicate open locations!");
 //            }
 //        }
+
+        this.expectedPathStep = this.getOpenLocationExpectPaths();
         return this;
     }
 
@@ -765,7 +758,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     int action = nxcs.classify(state, this.getCurrentLocation(), traceMoeadWeight, method);
 
-                    if(this.getState().equals(this.getStringForState(openState.x, openState.y))){
+                    if (this.getState().equals(this.getStringForState(openState.x, openState.y))) {
 
                         for (int i = 0; i < nxcs.PA0.length; i++) {
                             pa0[i] = nxcs.PA0[i];
@@ -793,12 +786,13 @@ public abstract class MazeBase implements Environment, ITrace {
 
                     if (this.isEndOfProblem(this.getState())) {
                         hyperVolumnSum += getHyperVolumn(getParetoByState(nxcs, openState, moeadObj.getWeights()));
+
                         //if path>100(step>100) means fail to reach the final state
 //                        double[] pa0 = new double[nxcs.PA0.length];
 //                        double[] pa1 = new double[nxcs.PA0.length];
 //                        double[] paTotal = new double[nxcs.PA0.length];
 
-                        nxcs.classify(getStringForState(openState.x,openState.y), this.getCurrentLocation(), traceMoeadWeight, method);
+                        nxcs.classify(getStringForState(openState.x, openState.y), this.getCurrentLocation(), traceMoeadWeight, method);
 
 //                        for (int i = 0; i < nxcs.PA0.length; i++) {
 //                            pa0[i] = nxcs.PA0[i];
@@ -811,7 +805,7 @@ public abstract class MazeBase implements Environment, ITrace {
 //                        }
                         StepSnapshot row = new StepSnapshot(trailIndex, timestamp, openState, this.getCurrentLocation(), targetWeight
                                 , objective, traceMoeadWeight, this.stepCount, 0, path
-                                , pa0, pa1, paTotal);
+                                , pa0, pa1, paTotal, 0, np.pHash, np.mutationRate, np.crossoverRate,checkPathStep(openState, this.getCurrentLocation(), this.stepCount));
                         //TODO: collect stats, trailIndex, finalState(timestamp), targetWeight, traceWeight, OpenState, FinalState, steps, hpyerVolumn
                         weightStats.add(row);
                         logger.info(String.format("@3 Test:%s, Steps:%d, to state:%s", openState, this.stepCount, this.getCurrentLocation()));
@@ -819,8 +813,11 @@ public abstract class MazeBase implements Environment, ITrace {
                     }
                 }
             }
+
+            long hashCount = nxcs.countHashInPopulation();
             final double hypersum = hyperVolumnSum;
             weightStats.stream().forEach(x -> x.setHyperVolumn(hypersum));
+            weightStats.stream().forEach(x -> x.setHash(hashCount));
             testStats.addAll(weightStats);
             stepStatsLogger.add(weightStats);
 
@@ -865,7 +862,7 @@ public abstract class MazeBase implements Environment, ITrace {
     }
 
     private double getHyperVolumn(List<ActionPareto> paretos) {
-        return paretos.size() == 0 ? 0 : hyperVolumnCalculator.calcHyperVolumn(paretoCalculator.getPareto(paretos), new Qvector(-10, -10));
+        return paretos.size() == 0 ? 0 : hyperVolumnCalculator.calcHyperVolumn(paretoCalculator.getPareto(paretos), new Qvector(-30, -30));
     }
 
     public boolean isTraceConditionMeet() {
@@ -882,5 +879,10 @@ public abstract class MazeBase implements Environment, ITrace {
 
     public List<Integer> getActions() {
         return this.act;
+    }
+
+    public boolean checkPathStep(Point openState, Point currentLocation, int stepCount) {
+        String pathStep  = String.format("(%d-%d)-(%d-%d)-%d", (int) openState.getX(), (int) openState.getY(), (int) currentLocation.getX(), (int) currentLocation.getY(), stepCount);
+        return (this.expectedPathStep.containsKey(pathStep)) ? true : false;
     }
 }

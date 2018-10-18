@@ -151,6 +151,8 @@ public class NXCSParameters {
 	public int groupSize = 1;
 
 
-
+	public int moeadPopSize = 10;
+	public int moeadNeighbourSize = 3;
+	public int moeadTotalItrNum = 250;
 	 
 }

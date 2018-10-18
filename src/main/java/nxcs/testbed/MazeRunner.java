@@ -4,6 +4,7 @@ package nxcs.testbed;
 import nxcs.*;
 import nxcs.common.MazeBase;
 import nxcs.common.MazeParameters;
+import nxcs.moead.MOEAD;
 import nxcs.utils.HyperVolumn;
 import nxcs.utils.ParetoCalculatorSkew;
 import org.json.simple.JSONArray;
@@ -25,8 +26,6 @@ public class MazeRunner {
         MazeParameters mp = new MazeParameters();
         NXCSParameters np = new NXCSParameters();
 
-        MazeParameters mp_test = new MazeParameters();
-        NXCSParameters np_test = new NXCSParameters();
 
         mp.totalTrailCount = 30;
         mp.finalStateUpperBound = 500;
@@ -38,15 +37,18 @@ public class MazeRunner {
 
 
         np.N = 150000;
-        np.stateLength = 24;
+        np.stateLength = 16;
         np.numActions = 4;
         np.rho0 = 1000;
-        np.pHash = 0.01;
+        np.pHash = 0.00;
         np.gamma = 0.85;
 //        np.crossoverRate = 0.8;
 //        np.mutationRate = 0.03;
         np.crossoverRate = 0.001;
-        np.mutationRate = 0.0001;
+        np.mutationRate = 0.0;
+//        np.mutationRate = 0;
+//        np.crossoverRate = 0;
+
         np.thetaMNA = 4;
         np.thetaGA = 800;
         // np.thetaGA = 0;
@@ -57,6 +59,9 @@ public class MazeRunner {
         np.doActionSetSubsumption = false;
         np.doGASubsumption = false;
         np.initialPrediction = 10;
+        np.moeadPopSize = 10;
+        np.moeadNeighbourSize = 3;
+        np.moeadTotalItrNum = 250;
 
         //initialize weights
         np.weights = new ArrayList<Point>();
@@ -77,22 +82,63 @@ public class MazeRunner {
         np.obj1 = new int[]{100};
 
 
+
+
         MazeBase maze = null;
 
-        try {
-            //initialize and run
-            mp.mazeFile = "data/NuwMmaze.txt";
-            mp.rewardFile = "rewards/NewMmaze.json";
+//        ArrayList<Double> pHashs = new ArrayList<>();
+//        pHashs.add(0.01d);
+//        pHashs.add(0.02d);
+//        pHashs.add(0.03d);
+//        pHashs.add(0.04d);
+//        pHashs.add(0.05d);
+//        pHashs.add(0.06d);
+//        pHashs.add(0.07d);
+//        pHashs.add(0.08d);
+//        pHashs.add(0.09d);
 
-            mp_test.mazeFile = "data/NuwMmaze.txt";
-            mp_test.rewardFile = "rewards/NewMmaze.json";
 
-            maze = new dst_weighted_sum(mp.mazeFile);
-            maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
+//        ArrayList<Double> mutationRate = new ArrayList<>();
+//        mutationRate.add(0.01d);
+//        mutationRate.add(0.02d);
+//        mutationRate.add(0.03d);
+//        mutationRate.add(0.04d);
+//        mutationRate.add(0.05d);
+//        mutationRate.add(0.06d);
+//        mutationRate.add(0.07d);
+//        mutationRate.add(0.08d);
+//        mutationRate.add(0.09d);
+//        mutationRate.add(0.1d);
+//        mutationRate.add(0.11d);
+//        mutationRate.add(0.12d);
+//        mutationRate.add(0.13d);
+//        mutationRate.add(0.14d);
+//        mutationRate.add(0.15d);
+//        mutationRate.add(0.16d);
+//        mutationRate.add(0.17d);
+//        mutationRate.add(0.18d);
+//        mutationRate.add(0.19d);
+//        mutationRate.add(0.2d);
 
+
+
+
+
+//        for (Double d : mutationRate){
+//            np.mutationRate = d;
+
+            try {
+                //initialize and run
+                mp.maze = "mmaze";
+                mp.mazeFile = "data/NuwMmazeUPDATE.txt";
+                mp.rewardFile = "rewards/NewMmaze.json";
+
+                maze = new mmaze_weighted_sum(mp.mazeFile);
+                maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
+//        }
 
     }
 

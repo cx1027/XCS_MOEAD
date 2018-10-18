@@ -14,6 +14,7 @@ public class MazeParameters {
     public String rewardFile;
     public boolean logLowerFinalState;
     public int method;
+    public String maze;
 
     public String getFileTimestampFormat() {
         return fileTimestampFormat;
@@ -23,7 +24,7 @@ public class MazeParameters {
 
     public MazeParameters() {
 
-        SimpleDateFormat dateformatyyyyMMdd = new SimpleDateFormat("yyyyMMddHHmm");
+        SimpleDateFormat dateformatyyyyMMdd = new SimpleDateFormat("yyyyMMddHHmmss");
         this.fileTimestampFormat = dateformatyyyyMMdd.format(new Date());
         this.resultInterval = 600;
         this.numOfChartBars = 20;

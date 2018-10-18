@@ -74,6 +74,7 @@ public class NXCS implements IBase {
     public int s4;
     public int s5;
     public int s6;
+    public int gaNum;
     public double[] PA0;
     public double[] PA1;
     public double[] PAtotal;
@@ -106,6 +107,18 @@ public class NXCS implements IBase {
         for (Classifier clas : population) {
             System.out.println(clas);
         }
+    }
+
+    /*
+    * count # in population
+    * */
+    public long countHashInPopulation(){
+//        List<Classifier> sub = new ArrayList<>();
+//        sub.add(population.get(0));
+//        Classifier c1 = population.get(0);
+//        int count = c1.condition.chars().filter(ch -> ch == '#').count();
+        long sum = population.stream().mapToLong(c -> c.condition.chars().filter(ch -> ch == '#').count()).sum();
+        return sum;
     }
 
     /**
@@ -1075,6 +1088,7 @@ public class NXCS implements IBase {
      */
     private void runGA(List<Classifier> setA, String state, Point openlocation, double[] moeadWeight) {
         assert (setA != null && state != null) : "Invalid parameters";
+        gaNum++;
         // assert(setA.size() > 0) : "No action set";
         if (setA.size() == 0)
             return;

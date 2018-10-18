@@ -41,6 +41,11 @@ public class StepSnapshot {
     private double[] PA1;
     private double[] PA2;
     private double[] PAtotal;
+    private long hashCount;
+    private double hash;
+    private boolean matched;
+    private double mutation;
+    private double crossover;
 
     public int getTimestamp() {
         return timestamp;
@@ -76,6 +81,10 @@ public class StepSnapshot {
 
     public void setHyperVolumn(double hyperVolumn) {
         this.hyperVolumn = hyperVolumn;
+    }
+
+    public void setHash(long hash) {
+        this.hashCount = hash;
     }
 
     public List<Point> getPath() {
@@ -136,7 +145,7 @@ public class StepSnapshot {
      */
     public StepSnapshot(int trailNumber, int timestamp, Point openState, Point finalState, double[] targetWeight
             , double objective, double[] weight, int steps, double hyperVolumn, List<Point> path
-            , double[] PA1, double[] PA2, double[] PAtotal) {
+            , double[] PA1, double[] PA2, double[] PAtotal, long hashCount, double hash, double mutation,double crossover, boolean matched) {
         this.trailNumber = trailNumber;
         this.timestamp = timestamp;
         this.openState = openState;
@@ -150,6 +159,11 @@ public class StepSnapshot {
         this.PA1 = PA1;
         this.PA2 = PA2;
         this.PAtotal = PAtotal;
+        this.hashCount = hashCount;
+        this.hash = hash;
+        this.matched = matched;
+        this.crossover =crossover;
+        this.mutation = mutation;
     }
 
     public StepSnapshot(Point openState, Point finalState, int steps, ArrayList<Point> path) {
@@ -193,6 +207,10 @@ public class StepSnapshot {
         build.append(String.format("%f", this.Q_steps_delta));
         build.append(", ");
         build.append(String.format("%f", this.Q_steps_min));
+        build.append(", ");
+        build.append(String.format("%f", this.hash));
+        build.append(", ");
+        build.append(String.format("%d", this.hashCount));
 //		build.append(", ");
 //
 //		if (this.path.size() > 0)
@@ -200,6 +218,7 @@ public class StepSnapshot {
 //				build.append(String.format("->(%d-%d)", (int) p.getX(), (int) p.getY()));
 //			}
 //		build.append("->");
+
         build.append("\n");
 
         return build.toString();
@@ -324,7 +343,17 @@ public class StepSnapshot {
 //        build.append(",");
         build.append(String.format("%d", this.steps));
         build.append(",");
+        build.append(this.matched ? "1" : "0");
+        build.append(",");
         build.append(String.format("%f", this.hyperVolumn));
+        build.append(",");
+        build.append(String.format("%f", this.hash));
+        build.append(",");
+        build.append(String.format("%d", this.hashCount));
+        build.append(",");
+        build.append(String.format("%f", this.crossover));
+        build.append(",");
+        build.append(String.format("%f", this.mutation));
         build.append(",");
 
         if (this.path.size() > 0) {
@@ -343,6 +372,7 @@ public class StepSnapshot {
             build.append(String.format("%f", d));
             build.append(",");
         }
+        build.setLength(build.length() - 1);
 
         //append end of line
         build.append("\n");
