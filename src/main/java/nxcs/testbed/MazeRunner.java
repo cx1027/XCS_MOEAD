@@ -27,7 +27,7 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
 
-        mp.totalTrailCount = 10;
+        mp.totalTrailCount = 30;
         mp.finalStateUpperBound = 2000;
         mp.resultInterval = 50;
         mp.logLowerFinalState = true;
@@ -40,12 +40,12 @@ public class MazeRunner {
         np.stateLength = 16;
         np.numActions = 4;
         np.rho0 = 1000;
-        np.pHash = 0.00;
+        np.pHash = 0.0001;
         np.gamma = 0.85;
 //        np.crossoverRate = 0.8;
 //        np.mutationRate = 0.03;
         np.crossoverRate = 0.001;
-        np.mutationRate = 0.0;
+        np.mutationRate = 0.001;
 //        np.mutationRate = 0;
 //        np.crossoverRate = 0;
 
@@ -137,6 +137,8 @@ public class MazeRunner {
 //
 
 
+
+
                 mp.maze = "xcs.maze4";
                 mp.mazeFile = "data/maze4.txt";
                 mp.rewardFile = "rewards/maze4.json";
@@ -155,7 +157,13 @@ public class MazeRunner {
                 maze = new maze6_weighted_sum(mp.mazeFile);
                 maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
 
-
+                mp.maze = "xcs.dst";
+                mp.mazeFile = "data/DSTfull.txt";
+                mp.rewardFile = "rewards/DSTfullUpdate.json";
+                maze = new dst_weighted_sum(mp.mazeFile);
+                mp.method = 0;
+                mp.finalStateUpperBound = 3000;
+                maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
 
 
 

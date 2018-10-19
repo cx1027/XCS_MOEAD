@@ -69,16 +69,22 @@ public class dst_weighted_sum extends MazeBase {
         }
     }
 
-    @Override
-    public boolean isTraceConditionMeet() {
-        return (this.finalStateCount % this.mp.resultInterval == 0)
-//                || (this.mp.logLowerFinalState
-//                && ((this.finalStateCount < 20 && this.finalStateCount % 5 == 0)||(this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
-                ;
-    }
-
     public Hashtable<String, Boolean> getOpenLocationExpectPaths(){
-        return null;
+        Hashtable<String, Boolean> ht = new Hashtable<String, Boolean>();
+        ht.put("(1-1)-(1-2)-1", true);
+        ht.put("(1-1)-(2-3)-3", true);
+        ht.put("(1-1)-(3-4)-5", true);
+        ht.put("(1-1)-(4-5)-7", true);
+        ht.put("(1-1)-(5-5)-8", true);
+        ht.put("(1-1)-(6-5)-9", true);
+        ht.put("(1-1)-(7-8)-13", true);
+        ht.put("(1-1)-(8-8)-14", true);
+        ht.put("(1-1)-(9-10)-17", true);
+        ht.put("(1-1)-(10-11)-19", true);
+
+
+
+        return ht;
     }
 
 
@@ -90,4 +96,22 @@ public class dst_weighted_sum extends MazeBase {
         ret.add(traceWeights.get(traceWeights.size()-1));
         return traceWeights;
     }
+
+    @Override
+    public ArrayList<Point> getTraceLocation(ArrayList<Point> openLocations){
+        ArrayList<Point> ret =  new ArrayList<Point>();
+        ret.add(new Point(1,1));
+        return ret;
+    }
+
+
+    @Override
+    public boolean isTraceConditionMeet() {
+        return (this.finalStateCount % this.mp.resultInterval == 0)
+                || (this.mp.logLowerFinalState && ((this.finalStateCount < 5)
+                || (this.finalStateCount < 20 && this.finalStateCount % 5 == 0)
+                || (this.finalStateCount < 100 && this.finalStateCount % 10 == 0)))
+                ;
+    }
+
 }

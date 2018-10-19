@@ -732,7 +732,7 @@ public abstract class MazeBase implements Environment, ITrace {
 
             int resetPoint = 0;
 
-            for (Point openState : this.openLocations) {
+            for (Point openState : this.getTraceLocation(this.openLocations)) {
                 this.resetToSamePosition(openState);
                 List<Point> path = new ArrayList<>();
                 path.add(openState);
@@ -872,6 +872,7 @@ public abstract class MazeBase implements Environment, ITrace {
     public List<double[]> getTraceWeight(List<double[]> traceWeights) {
         return traceWeights;
     }
+    public ArrayList<Point> getTraceLocation(ArrayList<Point> openLocations){ return openLocations;}
 
     public int getCurrentFinalStateCount() {
         return this.finalStateCount;
