@@ -27,9 +27,9 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
 
-        mp.totalTrailCount = 30;
-        mp.finalStateUpperBound = 500;
-        mp.resultInterval = 20;
+        mp.totalTrailCount = 10;
+        mp.finalStateUpperBound = 2000;
+        mp.resultInterval = 50;
         mp.logLowerFinalState = true;
         mp.logFolder = "log/maze1/csv/";
         //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
@@ -129,12 +129,36 @@ public class MazeRunner {
 
             try {
                 //initialize and run
-                mp.maze = "mmaze";
-                mp.mazeFile = "data/NuwMmazeUPDATE.txt";
-                mp.rewardFile = "rewards/NewMmaze.json";
+//                mp.maze = "xcs.mmaze";
+//                mp.mazeFile = "data/NuwMmazeUPDATE.txt";
+//                mp.rewardFile = "rewards/NewMmaze.json";
+//                maze = new mmaze_weighted_sum(mp.mazeFile);
+//                maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+//
 
-                maze = new mmaze_weighted_sum(mp.mazeFile);
+
+                mp.maze = "xcs.maze4";
+                mp.mazeFile = "data/maze4.txt";
+                mp.rewardFile = "rewards/maze4.json";
+                maze = new maze4_weighted_sum(mp.mazeFile);
                 maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+
+                mp.maze = "xcs.maze5";
+                mp.mazeFile = "data/maze5.txt";
+                mp.rewardFile = "rewards/maze5.json";
+                maze = new maze5_weighted_sum(mp.mazeFile);
+                maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+
+                mp.maze = "xcs.maze6";
+                mp.mazeFile = "data/maze6.txt";
+                mp.rewardFile = "rewards/maze6.json";
+                maze = new maze6_weighted_sum(mp.mazeFile);
+                maze.initialize(mp, np, parseRewardFile(mp.rewardFile), new HyperVolumn(), new ParetoCalculatorSkew()).run();
+
+
+
+
+
             } catch (Exception e) {
                 System.out.println(e.toString());
             }

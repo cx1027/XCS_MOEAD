@@ -143,6 +143,10 @@ public class mmaze_weighted_sum extends MazeBase {
         ht.put("(10-15)-(13-15)-5", true);
         ht.put("(10-15)-(9-18)-4", true);
         ht.put("(11-15)-(13-15)-4", true);
+        ht.put("(2-1)-(1-4)-4", true);
+        ht.put("(1-2)-(5-1)-7", true);
+        ht.put("(5-9)-(9-8)-7", true);
+        ht.put("(9-16)-(13-15)-7", true);
 
         return ht;
     }
