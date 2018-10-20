@@ -27,10 +27,10 @@ public class MazeRunner {
         NXCSParameters np = new NXCSParameters();
 
 
-        mp.totalTrailCount = 30;
+        mp.totalTrailCount = 1;
         mp.finalStateUpperBound = 2000;
-        mp.resultInterval = 50;
-        mp.logLowerFinalState = true;
+        mp.resultInterval = 1000;
+        mp.logLowerFinalState = false;
         mp.logFolder = "log/maze1/csv/";
         //0:pointMatch, 1:stateMatch, 2:bothMatch, 3:oneMatch
         mp.method = 1;
@@ -40,12 +40,12 @@ public class MazeRunner {
         np.stateLength = 16;
         np.numActions = 4;
         np.rho0 = 1000;
-        np.pHash = 0.0001;
+        np.pHash = 0.00001;
         np.gamma = 0.85;
 //        np.crossoverRate = 0.8;
 //        np.mutationRate = 0.03;
         np.crossoverRate = 0.001;
-        np.mutationRate = 0.001;
+        np.mutationRate = 0.0001;
 //        np.mutationRate = 0;
 //        np.crossoverRate = 0;
 

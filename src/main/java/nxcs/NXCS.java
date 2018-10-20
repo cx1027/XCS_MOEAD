@@ -110,9 +110,9 @@ public class NXCS implements IBase {
     }
 
     /*
-    * count # in population
-    * */
-    public long countHashInPopulation(){
+     * count # in population
+     * */
+    public long countHashInPopulation() {
 //        List<Classifier> sub = new ArrayList<>();
 //        sub.add(population.get(0));
 //        Classifier c1 = population.get(0);
@@ -472,7 +472,7 @@ public class NXCS implements IBase {
             return;
         }
 
-        double averagePrediciton = population.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0]+c.predictionNor[1])) / numerositySum;
+        double averagePrediciton = population.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0] + c.predictionNor[1])) / numerositySum;
 
         double[] xvotes = population.stream()
                 .mapToDouble(c -> c.deleteVote(averagePrediciton, params.thetaDel, params.delta)).toArray();
@@ -499,7 +499,7 @@ public class NXCS implements IBase {
 //            System.out.println(String.format("loop: %d\tweitght:%f:%f\tchoice:%s", cnt, moeadWeight[0], moeadWeight[1], xchoice.toString()));
             if (previousChoice != null && previousChoice.id == xchoice.id) {
                 tempList.remove(xchoice);
-                double avgPrediciton = tempList.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0]+c.predictionNor[1])) / numerositySum;
+                double avgPrediciton = tempList.stream().collect(Collectors.summingDouble(c -> c.predictionNor[0] + c.predictionNor[1])) / numerositySum;
 
                 xvotes = tempList.stream().mapToDouble(c -> c.deleteVote(avgPrediciton, params.thetaDel, params.delta)).toArray();
                 voteSum = 0;
@@ -646,8 +646,6 @@ public class NXCS implements IBase {
 
         return aaa;
     }
-
-
 
 
     //TODO:Update prediciton_ as predition Sum of Action a/[a] size
@@ -960,38 +958,40 @@ public class NXCS implements IBase {
             for (int i = 0; i < clas.prediction.length; i++) {
                 if (clas.experience < 1. / params.beta) {
                     clas.prediction[i] = clas.prediction[i] + (P[i] - clas.prediction[i]) / clas.experience;
-                    if(i==0) {
-                        clas.predictionNor[i] =stepNor(clas.prediction[i], 100);
-                    }else {
-                        clas.predictionNor[i] =rewardNor(clas.prediction[i], 1000,0);
+                    if (i == 0) {
+                        clas.predictionNor[i] = stepNor(clas.prediction[i], 100);
+                    } else {
+                        clas.predictionNor[i] = rewardNor(clas.prediction[i], 1000, 0);
                     }
-                    // averageSize calculate should be just once
-//                    if (i == 0) {
-//                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) / clas.experience;
-//                    }
-//                    clas.error[i] = clas.error[i]
-//                            + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) / clas.experience;
-//                    //norm error
-//
-//                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
+                    //averageSize calculate should be just once
+                    if (mpParams.maze.substring(0, 2) == "xcs") {
+                        if (i == 0) {
+                            clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) / clas.experience;
+                        }
+                        clas.error[i] = clas.error[i]
+                                + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) / clas.experience;
+                        //norm error
 
+                        clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
+                    }
 
                 } else {
                     clas.prediction[i] = clas.prediction[i] + (P[i] - clas.prediction[i]) * params.beta;
-                    if(i==0) {
-                        clas.predictionNor[i] =stepNor(clas.prediction[i], 100);
-                    }else {
-                        clas.predictionNor[i] =rewardNor(clas.prediction[i], 1000,0);
+                    if (i == 0) {
+                        clas.predictionNor[i] = stepNor(clas.prediction[i], 100);
+                    } else {
+                        clas.predictionNor[i] = rewardNor(clas.prediction[i], 1000, 0);
                     }
-//                    if (i == 0) {
-//                        clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
-//                    }
-//                    clas.error[i] = clas.error[i] + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) * params.beta;
-//                    //norm error
-//
-//
-//                    clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
 
+                    if (mpParams.maze.substring(0, 2) == "xcs") {
+                        if (i == 0) {
+                            clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
+                        }
+                        clas.error[i] = clas.error[i] + (Math.abs(P[i] - clas.prediction[i]) - clas.error[i]) * params.beta;
+                        //norm error
+
+                        clas.errorNor[i] = errorNor(clas.error[i], 50, 0);
+                    }
 
                 }
             }
@@ -1000,25 +1000,26 @@ public class NXCS implements IBase {
 
         // Update Fitness
         //TODO:HOW TO SET PARAMS.E0??????
-//        Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-//                cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
-//        double accuracySum0 = kappa0.entrySet().stream()
-//                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
-//        moead_actionSet.forEach(cl -> cl.fitnessArray[0] += params.beta
-//                * (kappa0.get(cl) * cl.numerosity / accuracySum0 - cl.fitnessArray[0]));
-//
-//        Map<Classifier, Double> kappa1 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
-//                cl -> (cl.errorNor[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[1] / params.e0, -params.nu)));
-//        double accuracySum1 = kappa1.entrySet().stream()
-//                .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
-//        moead_actionSet.forEach(cl -> cl.fitnessArray[1] += params.beta
-//                * (kappa1.get(cl) * cl.numerosity / accuracySum1 - cl.fitnessArray[1]));
-//
-//        //update fitness
-//        int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
-//        double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
-//        moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] - averageFitness + cl.fitnessArray[1] - averageFitness) / 2);
-//
+        if (mpParams.maze.substring(0, 2) == "xcs") {
+            Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
+                    cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
+            double accuracySum0 = kappa0.entrySet().stream()
+                    .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
+            moead_actionSet.forEach(cl -> cl.fitnessArray[0] += params.beta
+                    * (kappa0.get(cl) * cl.numerosity / accuracySum0 - cl.fitnessArray[0]));
+
+            Map<Classifier, Double> kappa1 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
+                    cl -> (cl.errorNor[1] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[1] / params.e0, -params.nu)));
+            double accuracySum1 = kappa1.entrySet().stream()
+                    .mapToDouble(entry -> entry.getValue() * entry.getKey().numerosity).sum();
+            moead_actionSet.forEach(cl -> cl.fitnessArray[1] += params.beta
+                    * (kappa1.get(cl) * cl.numerosity / accuracySum1 - cl.fitnessArray[1]));
+
+            //update fitness
+            int numerositySum = population.stream().collect(Collectors.summingInt(c -> c.numerosity));
+            double averageFitness = population.stream().collect(Collectors.summingDouble(c -> c.fitness)) / numerositySum;
+            moead_actionSet.forEach(cl -> cl.fitness = (cl.fitnessArray[0] - averageFitness + cl.fitnessArray[1] - averageFitness) / 2);
+        }
 
         if (params.doActionSetSubsumption) {
             return actionSetSubsumption(moead_actionSet);
