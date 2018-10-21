@@ -79,6 +79,12 @@ public class NXCS implements IBase {
     public double[] PA1;
     public double[] PAtotal;
 
+    public enum MazeType {
+        XCS, ZCS
+    }
+
+    public MazeType mazeType;
+
     /**
      * Constructs an NXCS instance, operating on the given environment with the
      * given parameters
@@ -98,6 +104,7 @@ public class NXCS implements IBase {
         population = new ArrayList<Classifier>();
         timestamp = 0;
         mpParams = mp;
+        this.mazeType = mpParams.maze.substring(0, 2) == "xcs" ? MazeType.XCS : MazeType.ZCS;
     }
 
     /**
@@ -665,12 +672,13 @@ public class NXCS implements IBase {
         // prediciton
         for (int i = 0; i < predictions.length; i++) {
             predictions[i] /= sizeSum[i];
-//            sum += predictions[i];
+            sum += predictions[i];
         }
         // Normalize
-//		for (int i = 0; i < predictions.length; i++) {
-//			predictions[i] /= sum;
-//		}
+        if(this.mazeType == MazeType.XCS)
+    		for (int i = 0; i < predictions.length; i++) {
+    			predictions[i] /= sum;
+    		}
 
         assert (predictions.length == params.numActions) : "Predictions are missing?";
 //		assert (Math.abs(Arrays.stream(predictions).sum() - 1) <= 0.0001) : "Predictions not normalized";
@@ -964,7 +972,7 @@ public class NXCS implements IBase {
                         clas.predictionNor[i] = rewardNor(clas.prediction[i], 1000, 0);
                     }
                     //averageSize calculate should be just once
-                    if (mpParams.maze.substring(0, 2) == "xcs") {
+                    if (this.mazeType == MazeType.XCS) {
                         if (i == 0) {
                             clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) / clas.experience;
                         }
@@ -983,7 +991,7 @@ public class NXCS implements IBase {
                         clas.predictionNor[i] = rewardNor(clas.prediction[i], 1000, 0);
                     }
 
-                    if (mpParams.maze.substring(0, 2) == "xcs") {
+                    if (this.mazeType == MazeType.XCS) {
                         if (i == 0) {
                             clas.averageSize = clas.averageSize + (setNumerosity - clas.numerosity) * params.beta;
                         }
@@ -1000,7 +1008,7 @@ public class NXCS implements IBase {
 
         // Update Fitness
         //TODO:HOW TO SET PARAMS.E0??????
-        if (mpParams.maze.substring(0, 2) == "xcs") {
+        if (this.mazeType == MazeType.XCS) {
             Map<Classifier, Double> kappa0 = moead_actionSet.stream().collect(Collectors.toMap(cl -> cl,
                     cl -> (cl.errorNor[0] < params.e0) ? 1 : params.alpha * Math.pow(cl.errorNor[0] / params.e0, -params.nu)));
             double accuracySum0 = kappa0.entrySet().stream()
